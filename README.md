@@ -1,0 +1,1 @@
+psql -d pay_yourself_first -f ./db/migrations/1_budget.up.sql
