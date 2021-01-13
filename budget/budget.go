@@ -118,3 +118,51 @@ func (d *Database) ListIncomes(ctx context.Context) ([]Income, error) {
 
 	return incomes, nil
 }
+
+// GetMonthIncome retrieves all income for a specific month
+// and year
+func (d *Database) GetMonthIncome(ctx context.Context, date time.Time) ([]Income, error) {
+
+	selectQuery := `
+	SELECT id, date, source, amount
+	FROM income
+	WHERE date = $1;
+	`
+
+	rows, err := d.database.QueryContext(
+		ctx,
+		selectQuery,
+		date,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve incomes for %v: %w", date, err)
+	}
+
+	var monthIncome []Income
+
+	for rows.Next() {
+		var id uint32
+		var date time.Time
+		var source string
+		var amount pgtype.Numeric
+
+		err = rows.Scan(
+			&id,
+			&date,
+			&source,
+			&amount,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+
+		monthIncome = append(monthIncome, Income{
+			ID:     id,
+			Date:   date,
+			Source: source,
+			Amount: decimal.NewFromBigInt(amount.Int, amount.Exp),
+		})
+	}
+
+	return monthIncome, nil
+}
