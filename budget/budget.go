@@ -121,7 +121,12 @@ func (d *Database) ListIncomes(ctx context.Context) ([]Income, error) {
 
 // GetMonthIncome retrieves all income for a specific month
 // and year
-func (d *Database) GetMonthIncome(ctx context.Context, date time.Time) ([]Income, error) {
+func (d *Database) GetMonthIncome(ctx context.Context, date time.Time) (*Income, error) {
+
+	var id uint32
+	var returnedDate time.Time
+	var source string
+	var amount pgtype.Numeric
 
 	selectQuery := `
 	SELECT id, date, source, amount
@@ -129,40 +134,57 @@ func (d *Database) GetMonthIncome(ctx context.Context, date time.Time) ([]Income
 	WHERE date = $1;
 	`
 
-	rows, err := d.database.QueryContext(
+	err := d.database.QueryRowContext(
 		ctx,
 		selectQuery,
 		date,
+	).Scan(
+		&id,
+		&returnedDate,
+		&source,
+		&amount,
 	)
-	if err != nil {
-		return nil, fmt.Errorf("could not retrieve incomes for %v: %w", date, err)
-	}
 
-	var monthIncome []Income
-
-	for rows.Next() {
-		var id uint32
-		var date time.Time
-		var source string
-		var amount pgtype.Numeric
-
-		err = rows.Scan(
-			&id,
-			&date,
-			&source,
-			&amount,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("failed to scan row: %w", err)
-		}
-
-		monthIncome = append(monthIncome, Income{
+	switch {
+	case err == sql.ErrNoRows:
+		return nil, fmt.Errorf("no income for specified month")
+	case err != nil:
+		return nil, fmt.Errorf("unexpected database error: %w", err)
+	default:
+		monthIncome := Income{
 			ID:     id,
-			Date:   date,
+			Date:   returnedDate,
 			Source: source,
 			Amount: decimal.NewFromBigInt(amount.Int, amount.Exp),
-		})
+		}
+		return &monthIncome, nil
+	}
+}
+
+// DeleteIncome deletes an income based on the id
+func (d *Database) DeleteIncome(ctx context.Context, id uint32) error {
+
+	deleteQuery := `
+	DELETE FROM income
+	WHERE id = $1
+	`
+
+	result, err := d.database.ExecContext(
+		ctx,
+		deleteQuery,
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("unexpected database error: %w", err)
 	}
 
-	return monthIncome, nil
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error getting rows affected by deletion: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no rows were affected by deletion request")
+	}
+	return nil
 }

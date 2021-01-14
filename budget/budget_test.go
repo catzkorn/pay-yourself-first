@@ -71,12 +71,13 @@ func TestGetAllIncome(t *testing.T) {
 			Amount: marchAmount,
 		}
 
-		marchSecondAmount, _ := decimal.NewFromString("2000.00")
-		marchSecondIncome := Income{
-			Date:   time.Date(2021, time.March, 1, 0, 0, 0, 0, time.UTC),
-			Source: "Ebay",
-			Amount: marchSecondAmount,
-		}
+		// TODO: Removed due to MVP change. Only one income stream per month - 14/01/21
+		// marchSecondAmount, _ := decimal.NewFromString("2000.00")
+		// marchSecondIncome := Income{
+		// 	Date:   time.Date(2021, time.March, 1, 0, 0, 0, 0, time.UTC),
+		// 	Source: "Ebay",
+		// 	Amount: marchSecondAmount,
+		// }
 
 		juneAmount, _ := decimal.NewFromString("2000.00")
 		juneIncome := Income{
@@ -85,7 +86,7 @@ func TestGetAllIncome(t *testing.T) {
 			Amount: juneAmount,
 		}
 
-		incomes := []Income{aprilIncome, marchIncome, marchSecondIncome, juneIncome}
+		incomes := []Income{aprilIncome, marchIncome, juneIncome}
 
 		for _, income := range incomes {
 			_, err = store.RecordIncome(context.Background(), income)
@@ -99,15 +100,8 @@ func TestGetAllIncome(t *testing.T) {
 			t.Errorf("incorrect number of entries retrieved got %v want %v", len(retrievedIncome), len(incomes))
 		}
 
-		t.Logf("%v", retrievedIncome)
-
-		if retrievedIncome[0].Date != marchIncome.Date {
-			t.Errorf("list of incomes not returned in correct order")
-		}
-
 		err = clearIncomeTable()
 		assertDatabaseError(t, err)
-
 	})
 }
 
@@ -132,13 +126,6 @@ func TestGetMonthlyIncome(t *testing.T) {
 			Amount: marchAmount,
 		}
 
-		marchSecondAmount, _ := decimal.NewFromString("2000.00")
-		marchSecondIncome := Income{
-			Date:   time.Date(2021, time.March, 1, 0, 0, 0, 0, time.UTC),
-			Source: "Ebay",
-			Amount: marchSecondAmount,
-		}
-
 		juneAmount, _ := decimal.NewFromString("2000.00")
 		juneIncome := Income{
 			Date:   time.Date(2021, time.June, 1, 0, 0, 0, 0, time.UTC),
@@ -146,7 +133,7 @@ func TestGetMonthlyIncome(t *testing.T) {
 			Amount: juneAmount,
 		}
 
-		incomes := []Income{aprilIncome, marchIncome, marchSecondIncome, juneIncome}
+		incomes := []Income{aprilIncome, marchIncome, juneIncome}
 
 		for _, income := range incomes {
 			_, err = store.RecordIncome(context.Background(), income)
@@ -155,19 +142,59 @@ func TestGetMonthlyIncome(t *testing.T) {
 
 		monthOfDate := time.Date(2021, time.March, 1, 0, 0, 0, 0, time.UTC)
 
-		marchIncomes, err := store.GetMonthIncome(context.Background(), monthOfDate)
+		result, err := store.GetMonthIncome(context.Background(), monthOfDate)
 		assertDatabaseError(t, err)
 
-		if len(marchIncomes) != 2 {
-			t.Errorf("did not retrieve expected number of income results got %v want %v", len(marchIncomes), 2)
-		}
+		// if len(marchIncomes) != 2 {
+		// 	t.Errorf("did not retrieve expected number of income results got %v want %v", len(marchIncomes), 2)
+		// }
 
-		if marchIncomes[0].Date != monthOfDate && marchIncomes[1].Date != monthOfDate {
-			t.Errorf("did not retrieve incomes from the correct month got %v & %v want %v", marchIncomes[0].Date, marchIncomes[1].Date, monthOfDate)
+		if result.Date != monthOfDate {
+			t.Errorf("did not retrieve income from the correct month got %v want %v", result.Date, monthOfDate)
 		}
 
 		err = clearIncomeTable()
 		assertDatabaseError(t, err)
+	})
+}
+
+func TestDeleteIncome(t *testing.T) {
+
+	t.Run("deletes a specific income entry", func(t *testing.T) {
+
+		amount, _ := decimal.NewFromString("1550.55")
+
+		income := Income{
+			Date:   time.Date(2020, time.Now().Month()+1, 12, 0, 0, 0, 0, time.UTC),
+			Source: "Salary",
+			Amount: amount,
+		}
+
+		store, err := NewDatabaseConnection()
+		assertDatabaseError(t, err)
+
+		returnIncome, err := store.RecordIncome(context.Background(), income)
+		assertDatabaseError(t, err)
+
+		err = store.DeleteIncome(context.Background(), returnIncome.ID)
+
+		if err != nil {
+			t.Errorf("income entry was not deleted")
+		}
+
+		err = clearIncomeTable()
+		assertDatabaseError(t, err)
+	})
+
+	t.Run("attempts to delete an entry that does not exist", func(t *testing.T) {
+		store, err := NewDatabaseConnection()
+		assertDatabaseError(t, err)
+
+		err = store.DeleteIncome(context.Background(), 0)
+
+		if err == nil {
+			t.Errorf("an entry that does not exist did not trigger error")
+		}
 
 	})
 
