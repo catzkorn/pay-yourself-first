@@ -45,8 +45,8 @@ func TestRecordIncome(t *testing.T) {
 			t.Errorf("income Amount is not as expected got %v want %v", returnIncome.Amount, income.Amount)
 		}
 
-		err = clearIncomeTable()
-		assertDatabaseError(t, err)
+		// err = clearIncomeTable()
+		// assertDatabaseError(t, err)
 	})
 }
 
@@ -100,8 +100,8 @@ func TestGetAllIncome(t *testing.T) {
 			t.Errorf("incorrect number of entries retrieved got %v want %v", len(retrievedIncome), len(incomes))
 		}
 
-		err = clearIncomeTable()
-		assertDatabaseError(t, err)
+		// err = clearIncomeTable()
+		// assertDatabaseError(t, err)
 	})
 }
 
@@ -153,8 +153,8 @@ func TestGetMonthlyIncome(t *testing.T) {
 			t.Errorf("did not retrieve income from the correct month got %v want %v", result.Date, monthOfDate)
 		}
 
-		err = clearIncomeTable()
-		assertDatabaseError(t, err)
+		// err = clearIncomeTable()
+		// assertDatabaseError(t, err)
 	})
 }
 
@@ -182,8 +182,8 @@ func TestDeleteIncome(t *testing.T) {
 			t.Errorf("income entry was not deleted")
 		}
 
-		err = clearIncomeTable()
-		assertDatabaseError(t, err)
+		// err = clearIncomeTable()
+		// assertDatabaseError(t, err)
 	})
 
 	t.Run("attempts to delete an entry that does not exist", func(t *testing.T) {
