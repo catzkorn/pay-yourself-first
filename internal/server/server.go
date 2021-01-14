@@ -5,17 +5,17 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/catzkorn/pay-yourself-first/budget"
+	"github.com/catzkorn/pay-yourself-first/internal/database"
 )
 
 // Server is the HTTP interface
 type Server struct {
-	database *budget.Database
+	database *database.Database
 	router   *http.ServeMux
 }
 
 // NewServer returns an instance of a Server
-func NewServer(database *budget.Database) *Server {
+func NewServer(database *database.Database) *Server {
 
 	s := &Server{database: database, router: http.NewServeMux()}
 

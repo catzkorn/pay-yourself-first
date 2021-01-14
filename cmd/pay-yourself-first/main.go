@@ -4,13 +4,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/catzkorn/pay-yourself-first/budget"
-	"github.com/catzkorn/pay-yourself-first/server"
+	"github.com/catzkorn/pay-yourself-first/internal/database"
+	"github.com/catzkorn/pay-yourself-first/internal/server"
 )
 
 func main() {
 
-	database, err := budget.NewDatabaseConnection()
+	database, err := database.NewDatabaseConnection()
 	if err != nil {
 		log.Fatalf("failed to create database connection: %v", err)
 	}

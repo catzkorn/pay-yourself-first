@@ -1,4 +1,4 @@
-package budget
+package database
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/catzkorn/pay-yourself-first/internal/income"
 	"github.com/shopspring/decimal"
 )
 
@@ -17,7 +18,7 @@ func TestRecordIncome(t *testing.T) {
 
 		amount, _ := decimal.NewFromString("1550.55")
 
-		income := Income{
+		income := income.Income{
 			Date:   time.Date(2020, time.Now().Month()+1, 12, 0, 0, 0, 0, time.UTC),
 			Source: "Salary",
 			Amount: amount,
@@ -45,8 +46,8 @@ func TestRecordIncome(t *testing.T) {
 			t.Errorf("income Amount is not as expected got %v want %v", returnIncome.Amount, income.Amount)
 		}
 
-		// err = clearIncomeTable()
-		// assertDatabaseError(t, err)
+		err = clearIncomeTable()
+		assertDatabaseError(t, err)
 	})
 }
 
@@ -58,14 +59,14 @@ func TestGetAllIncome(t *testing.T) {
 		assertDatabaseError(t, err)
 
 		aprilAmount, _ := decimal.NewFromString("2000.00")
-		aprilIncome := Income{
+		aprilIncome := income.Income{
 			Date:   time.Date(2021, time.April, 1, 0, 0, 0, 0, time.UTC),
 			Source: "Salary",
 			Amount: aprilAmount,
 		}
 
 		marchAmount, _ := decimal.NewFromString("1550.55")
-		marchIncome := Income{
+		marchIncome := income.Income{
 			Date:   time.Date(2021, time.March, 1, 0, 0, 0, 0, time.UTC),
 			Source: "Salary",
 			Amount: marchAmount,
@@ -80,13 +81,13 @@ func TestGetAllIncome(t *testing.T) {
 		// }
 
 		juneAmount, _ := decimal.NewFromString("2000.00")
-		juneIncome := Income{
+		juneIncome := income.Income{
 			Date:   time.Date(2021, time.June, 1, 0, 0, 0, 0, time.UTC),
 			Source: "Furlough Pay",
 			Amount: juneAmount,
 		}
 
-		incomes := []Income{aprilIncome, marchIncome, juneIncome}
+		incomes := []income.Income{aprilIncome, marchIncome, juneIncome}
 
 		for _, income := range incomes {
 			_, err = store.RecordIncome(context.Background(), income)
@@ -100,8 +101,8 @@ func TestGetAllIncome(t *testing.T) {
 			t.Errorf("incorrect number of entries retrieved got %v want %v", len(retrievedIncome), len(incomes))
 		}
 
-		// err = clearIncomeTable()
-		// assertDatabaseError(t, err)
+		err = clearIncomeTable()
+		assertDatabaseError(t, err)
 	})
 }
 
@@ -113,27 +114,27 @@ func TestGetMonthlyIncome(t *testing.T) {
 		assertDatabaseError(t, err)
 
 		aprilAmount, _ := decimal.NewFromString("2000.00")
-		aprilIncome := Income{
+		aprilIncome := income.Income{
 			Date:   time.Date(2021, time.April, 1, 0, 0, 0, 0, time.UTC),
 			Source: "Salary",
 			Amount: aprilAmount,
 		}
 
 		marchAmount, _ := decimal.NewFromString("1550.55")
-		marchIncome := Income{
+		marchIncome := income.Income{
 			Date:   time.Date(2021, time.March, 1, 0, 0, 0, 0, time.UTC),
 			Source: "Salary",
 			Amount: marchAmount,
 		}
 
 		juneAmount, _ := decimal.NewFromString("2000.00")
-		juneIncome := Income{
+		juneIncome := income.Income{
 			Date:   time.Date(2021, time.June, 1, 0, 0, 0, 0, time.UTC),
 			Source: "Furlough Pay",
 			Amount: juneAmount,
 		}
 
-		incomes := []Income{aprilIncome, marchIncome, juneIncome}
+		incomes := []income.Income{aprilIncome, marchIncome, juneIncome}
 
 		for _, income := range incomes {
 			_, err = store.RecordIncome(context.Background(), income)
@@ -153,8 +154,8 @@ func TestGetMonthlyIncome(t *testing.T) {
 			t.Errorf("did not retrieve income from the correct month got %v want %v", result.Date, monthOfDate)
 		}
 
-		// err = clearIncomeTable()
-		// assertDatabaseError(t, err)
+		err = clearIncomeTable()
+		assertDatabaseError(t, err)
 	})
 }
 
@@ -164,7 +165,7 @@ func TestDeleteIncome(t *testing.T) {
 
 		amount, _ := decimal.NewFromString("1550.55")
 
-		income := Income{
+		income := income.Income{
 			Date:   time.Date(2020, time.Now().Month()+1, 12, 0, 0, 0, 0, time.UTC),
 			Source: "Salary",
 			Amount: amount,
@@ -182,8 +183,8 @@ func TestDeleteIncome(t *testing.T) {
 			t.Errorf("income entry was not deleted")
 		}
 
-		// err = clearIncomeTable()
-		// assertDatabaseError(t, err)
+		err = clearIncomeTable()
+		assertDatabaseError(t, err)
 	})
 
 	t.Run("attempts to delete an entry that does not exist", func(t *testing.T) {

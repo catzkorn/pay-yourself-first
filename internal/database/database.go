@@ -1,4 +1,4 @@
-package budget
+package database
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/catzkorn/pay-yourself-first/internal/income"
 	"github.com/jackc/pgtype"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/shopspring/decimal"
@@ -33,7 +34,7 @@ func NewDatabaseConnection() (*Database, error) {
 }
 
 // RecordIncome inserts a type of income into the temporary data store
-func (d *Database) RecordIncome(ctx context.Context, income Income) (*Income, error) {
+func (d *Database) RecordIncome(ctx context.Context, i income.Income) (*income.Income, error) {
 
 	var id uint32
 	var date time.Time
@@ -49,9 +50,9 @@ func (d *Database) RecordIncome(ctx context.Context, income Income) (*Income, er
 	err := d.database.QueryRowContext(
 		ctx,
 		insertQuery,
-		income.Date,
-		income.Source,
-		income.Amount,
+		i.Date,
+		i.Source,
+		i.Amount,
 	).Scan(
 		&id,
 		&date,
@@ -63,7 +64,7 @@ func (d *Database) RecordIncome(ctx context.Context, income Income) (*Income, er
 		return nil, fmt.Errorf("unexpected insert error: %w", err)
 	}
 
-	returnedIncome := Income{
+	returnedIncome := income.Income{
 		ID:     id,
 		Date:   date,
 		Source: source,
@@ -74,7 +75,7 @@ func (d *Database) RecordIncome(ctx context.Context, income Income) (*Income, er
 }
 
 // ListIncomes returns every entry of income ordered by descending date
-func (d *Database) ListIncomes(ctx context.Context) ([]Income, error) {
+func (d *Database) ListIncomes(ctx context.Context) ([]income.Income, error) {
 
 	selectQuery := `
 	SELECT id, date, source, amount
@@ -90,7 +91,7 @@ func (d *Database) ListIncomes(ctx context.Context) ([]Income, error) {
 		return nil, fmt.Errorf("could not retrieve all income data: %w", err)
 	}
 
-	var incomes []Income
+	var incomes []income.Income
 
 	for rows.Next() {
 		var id uint32
@@ -108,7 +109,7 @@ func (d *Database) ListIncomes(ctx context.Context) ([]Income, error) {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
 
-		incomes = append(incomes, Income{
+		incomes = append(incomes, income.Income{
 			ID:     id,
 			Date:   date,
 			Source: source,
@@ -121,7 +122,7 @@ func (d *Database) ListIncomes(ctx context.Context) ([]Income, error) {
 
 // GetMonthIncome retrieves all income for a specific month
 // and year
-func (d *Database) GetMonthIncome(ctx context.Context, date time.Time) (*Income, error) {
+func (d *Database) GetMonthIncome(ctx context.Context, date time.Time) (*income.Income, error) {
 
 	var id uint32
 	var returnedDate time.Time
@@ -151,7 +152,7 @@ func (d *Database) GetMonthIncome(ctx context.Context, date time.Time) (*Income,
 	case err != nil:
 		return nil, fmt.Errorf("unexpected database error: %w", err)
 	default:
-		monthIncome := Income{
+		monthIncome := income.Income{
 			ID:     id,
 			Date:   returnedDate,
 			Source: source,
