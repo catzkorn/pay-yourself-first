@@ -12,7 +12,7 @@ import (
 
 // Server is the HTTP interface
 type Server struct {
-	database *database.Database
+	database Database
 	router   *http.ServeMux
 }
 
@@ -20,12 +20,12 @@ type Server struct {
 type Database interface {
 	RecordIncome(ctx context.Context, i income.Income) (*income.Income, error)
 	ListIncomes(ctx context.Context) ([]income.Income, error)
-	GetMonthIncome(ctx context.Context, date time.Time) (*income.Income, error)
+	RetrieveMonthIncome(ctx context.Context, date time.Time) (*income.Income, error)
 	DeleteIncome(ctx context.Context, id uint32) error
 }
 
 // NewServer returns an instance of a Server
-func NewServer(database *database.Database) *Server {
+func NewServer(database Database) *Server {
 
 	s := &Server{database: database, router: http.NewServeMux()}
 
@@ -84,7 +84,7 @@ func (s *Server) getMonthIncome(ctx context.Context, w http.ResponseWriter, r *h
 		return
 	}
 
-	monthIncome, err := s.database.GetMonthIncome(ctx, parsedDate)
+	monthIncome, err := s.database.RetrieveMonthIncome(ctx, parsedDate)
 
 	switch {
 	case err == database.ErrNoIncomeForMonth:

@@ -125,9 +125,9 @@ func (d *Database) ListIncomes(ctx context.Context) ([]income.Income, error) {
 	return incomes, nil
 }
 
-// GetMonthIncome retrieves all income for a specific month
+// RetrieveMonthIncome retrieves all income for a specific month
 // and year
-func (d *Database) GetMonthIncome(ctx context.Context, date time.Time) (*income.Income, error) {
+func (d *Database) RetrieveMonthIncome(ctx context.Context, date time.Time) (*income.Income, error) {
 
 	var id uint32
 	var returnedDate time.Time

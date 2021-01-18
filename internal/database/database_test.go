@@ -106,7 +106,7 @@ func TestGetAllIncome(t *testing.T) {
 	})
 }
 
-func TestGetMonthlyIncome(t *testing.T) {
+func TestRetrieveMonthIncome(t *testing.T) {
 
 	t.Run("retrieves all income for a specific month", func(t *testing.T) {
 
@@ -143,7 +143,7 @@ func TestGetMonthlyIncome(t *testing.T) {
 
 		monthOfDate := time.Date(2021, time.March, 1, 0, 0, 0, 0, time.UTC)
 
-		result, err := store.GetMonthIncome(context.Background(), monthOfDate)
+		result, err := store.RetrieveMonthIncome(context.Background(), monthOfDate)
 		assertDatabaseError(t, err)
 
 		// if len(marchIncomes) != 2 {
