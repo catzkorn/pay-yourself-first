@@ -24,7 +24,7 @@ func TestRecordIncome(t *testing.T) {
 			Amount: amount,
 		}
 
-		store, err := NewDatabaseConnection()
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
 		assertDatabaseError(t, err)
 
 		returnIncome, err := store.RecordIncome(context.Background(), income)
@@ -55,7 +55,7 @@ func TestGetAllIncome(t *testing.T) {
 
 	t.Run("retrieves all income in decending order", func(t *testing.T) {
 
-		store, err := NewDatabaseConnection()
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
 		assertDatabaseError(t, err)
 
 		aprilAmount, _ := decimal.NewFromString("2000.00")
@@ -110,7 +110,7 @@ func TestGetMonthlyIncome(t *testing.T) {
 
 	t.Run("retrieves all income for a specific month", func(t *testing.T) {
 
-		store, err := NewDatabaseConnection()
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
 		assertDatabaseError(t, err)
 
 		aprilAmount, _ := decimal.NewFromString("2000.00")
@@ -171,7 +171,7 @@ func TestDeleteIncome(t *testing.T) {
 			Amount: amount,
 		}
 
-		store, err := NewDatabaseConnection()
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
 		assertDatabaseError(t, err)
 
 		returnIncome, err := store.RecordIncome(context.Background(), income)
@@ -188,7 +188,7 @@ func TestDeleteIncome(t *testing.T) {
 	})
 
 	t.Run("attempts to delete an entry that does not exist", func(t *testing.T) {
-		store, err := NewDatabaseConnection()
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
 		assertDatabaseError(t, err)
 
 		err = store.DeleteIncome(context.Background(), 0)
@@ -209,7 +209,7 @@ func assertDatabaseError(t *testing.T, err error) {
 }
 
 func clearIncomeTable() error {
-	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_STRING"))
+	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_TEST_STRING"))
 	if err != nil {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}

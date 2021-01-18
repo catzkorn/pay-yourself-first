@@ -10,7 +10,7 @@ import (
 
 func main() {
 
-	database, err := database.NewDatabaseConnection()
+	database, err := database.NewDatabaseConnection("DATABASE_CONN_STRING")
 	if err != nil {
 		log.Fatalf("failed to create database connection: %v", err)
 	}

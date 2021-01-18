@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -18,10 +19,14 @@ type Database struct {
 	database *sql.DB
 }
 
-// NewDatabaseConnection starts connection with database
-func NewDatabaseConnection() (*Database, error) {
+// ErrNoIncomeForMonth is the error returned when no data could be
+// found for the month requested
+var ErrNoIncomeForMonth = errors.New("no income for selected month")
 
-	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_STRING"))
+// NewDatabaseConnection starts connection with database
+func NewDatabaseConnection(databaseString string) (*Database, error) {
+
+	db, err := sql.Open("pgx", os.Getenv(databaseString))
 	if err != nil {
 		return nil, fmt.Errorf("unexpected connection error: %w", err)
 	}
@@ -148,7 +153,7 @@ func (d *Database) GetMonthIncome(ctx context.Context, date time.Time) (*income.
 
 	switch {
 	case err == sql.ErrNoRows:
-		return nil, fmt.Errorf("no income for specified month")
+		return nil, ErrNoIncomeForMonth
 	case err != nil:
 		return nil, fmt.Errorf("unexpected database error: %w", err)
 	default:
