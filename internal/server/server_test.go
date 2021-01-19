@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,29 +17,39 @@ import (
 //ToDo build out testing
 
 type StubDatabase struct {
-	income      income.Income
+	income      *income.Income
 	incomes     []income.Income
 	deleteCount []uint32
 }
 
 func (s *StubDatabase) RetrieveMonthIncome(_ context.Context, date time.Time) (*income.Income, error) {
 
-	if date != s.income.Date {
+	if s.income == nil || !date.Equal(s.income.Date) {
 		return nil, income.ErrNoIncomeForMonth
 	}
 
-	return &s.income, nil
+	return s.income, nil
 }
 
 func (s *StubDatabase) RecordIncome(_ context.Context, i income.Income) (*income.Income, error) {
-	returnedIncome := income.Income{
-		ID:     1,
-		Date:   i.Date,
-		Source: i.Source,
-		Amount: i.Amount,
+
+	if s.income == nil {
+		s.income = &income.Income{
+			ID:     1,
+			Date:   i.Date,
+			Source: i.Source,
+			Amount: i.Amount,
+		}
+		return s.income, nil
 	}
 
-	return &returnedIncome, nil
+	if !s.income.Date.Equal(i.Date) {
+		return nil, fmt.Errorf("specified month can not be updated")
+	}
+	s.income.Source = i.Source
+	s.income.Amount = i.Amount
+
+	return s.income, nil
 }
 
 func (s *StubDatabase) ListIncomes(_ context.Context) ([]income.Income, error) {
@@ -69,7 +80,7 @@ func TestGetMonthIncome(t *testing.T) {
 			Amount: amount,
 		}
 
-		store := &StubDatabase{income: i}
+		store := &StubDatabase{income: &i}
 
 		server := NewServer(store)
 
