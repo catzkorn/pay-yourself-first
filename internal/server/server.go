@@ -6,18 +6,17 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/catzkorn/pay-yourself-first/internal/database"
 	"github.com/catzkorn/pay-yourself-first/internal/income"
 )
 
 // Server is the HTTP interface
 type Server struct {
-	database Database
-	router   *http.ServeMux
+	dataStore DataStore
+	router    *http.ServeMux
 }
 
-// Database defines the interface to persist data
-type Database interface {
+// DataStore defines the interface to persist data
+type DataStore interface {
 	RecordIncome(ctx context.Context, i income.Income) (*income.Income, error)
 	ListIncomes(ctx context.Context) ([]income.Income, error)
 	RetrieveMonthIncome(ctx context.Context, date time.Time) (*income.Income, error)
@@ -25,9 +24,9 @@ type Database interface {
 }
 
 // NewServer returns an instance of a Server
-func NewServer(database Database) *Server {
+func NewServer(dataStore DataStore) *Server {
 
-	s := &Server{database: database, router: http.NewServeMux()}
+	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 
 	s.router.Handle("/income", http.HandlerFunc(s.incomeHandler))
 	s.router.Handle("/", http.HandlerFunc(s.budgetHandler))
@@ -52,7 +51,7 @@ func (s *Server) incomeHandler(w http.ResponseWriter, r *http.Request) {
 // processListIncome processes the get '/' and returns the income slice in JSON format
 func (s *Server) processListIncome(ctx context.Context, w http.ResponseWriter) {
 
-	incomes, err := s.database.ListIncomes(ctx)
+	incomes, err := s.dataStore.ListIncomes(ctx)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -84,10 +83,10 @@ func (s *Server) getMonthIncome(ctx context.Context, w http.ResponseWriter, r *h
 		return
 	}
 
-	monthIncome, err := s.database.RetrieveMonthIncome(ctx, parsedDate)
+	monthIncome, err := s.dataStore.RetrieveMonthIncome(ctx, parsedDate)
 
 	switch {
-	case err == database.ErrNoIncomeForMonth:
+	case err == income.ErrNoIncomeForMonth:
 		monthIncome = &income.Income{
 			Date: parsedDate,
 		}
@@ -112,7 +111,7 @@ func (s *Server) postMonthIncome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	returnedIncome, err := s.database.RecordIncome(r.Context(), income)
+	returnedIncome, err := s.dataStore.RecordIncome(r.Context(), income)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -1,6 +1,7 @@
 package income
 
 import (
+	"errors"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -13,3 +14,7 @@ type Income struct {
 	Source string
 	Amount decimal.Decimal
 }
+
+// ErrNoIncomeForMonth is the error returned when no data could be
+// found for the month requested
+var ErrNoIncomeForMonth = errors.New("no income for selected month")

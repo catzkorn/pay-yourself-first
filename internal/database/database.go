@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -18,10 +17,6 @@ import (
 type Database struct {
 	database *sql.DB
 }
-
-// ErrNoIncomeForMonth is the error returned when no data could be
-// found for the month requested
-var ErrNoIncomeForMonth = errors.New("no income for selected month")
 
 // NewDatabaseConnection starts connection with database
 func NewDatabaseConnection(databaseString string) (*Database, error) {
@@ -153,7 +148,7 @@ func (d *Database) RetrieveMonthIncome(ctx context.Context, date time.Time) (*in
 
 	switch {
 	case err == sql.ErrNoRows:
-		return nil, ErrNoIncomeForMonth
+		return nil, income.ErrNoIncomeForMonth
 	case err != nil:
 		return nil, fmt.Errorf("unexpected database error: %w", err)
 	default:
