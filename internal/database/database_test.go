@@ -19,7 +19,7 @@ func TestRecordIncome(t *testing.T) {
 		amount, _ := decimal.NewFromString("1550.55")
 
 		income := income.Income{
-			Date:   time.Date(2020, time.Now().Month()+1, 12, 0, 0, 0, 0, time.UTC),
+			Date:   time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC),
 			Source: "Salary",
 			Amount: amount,
 		}
@@ -48,6 +48,52 @@ func TestRecordIncome(t *testing.T) {
 
 		err = clearIncomeTable()
 		assertDatabaseError(t, err)
+	})
+
+	t.Run("user can update an income for a previously submitted month", func(t *testing.T) {
+
+		amount, _ := decimal.NewFromString("5000.00")
+
+		julyIncome := income.Income{
+			Date:   time.Date(2020, time.July, 1, 0, 0, 0, 0, time.UTC),
+			Source: "Salary",
+			Amount: amount,
+		}
+
+		ctx := context.Background()
+
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
+		assertDatabaseError(t, err)
+
+		returnedJulyIncome, err := store.RecordIncome(ctx, julyIncome)
+		assertDatabaseError(t, err)
+
+		julyIncome.ID = returnedJulyIncome.ID
+		updatedAmount, _ := decimal.NewFromString("5500.00")
+		julyIncome.Amount = updatedAmount
+
+		updatedJulyIncome, err := store.RecordIncome(ctx, julyIncome)
+		assertDatabaseError(t, err)
+
+		if updatedJulyIncome.ID != returnedJulyIncome.ID {
+			t.Errorf("incorrect id returned got %v want %v", updatedJulyIncome.ID, returnedJulyIncome.ID)
+		}
+
+		if updatedJulyIncome.Date != (returnedJulyIncome.Date) {
+			t.Errorf("incorrect date returned got %v want %v", updatedJulyIncome.Date, returnedJulyIncome.Date)
+		}
+
+		if !updatedJulyIncome.Amount.Equal(updatedAmount) {
+			t.Errorf("amount was not updated to the specified amount got %v want %v", updatedJulyIncome.Amount, updatedAmount)
+		}
+
+		if updatedJulyIncome.Amount.Equal(returnedJulyIncome.Amount) {
+			t.Errorf("amount was not updated got %v want %v", updatedJulyIncome.Amount, returnedJulyIncome.Amount)
+		}
+
+		err = clearIncomeTable()
+		assertDatabaseError(t, err)
+
 	})
 }
 

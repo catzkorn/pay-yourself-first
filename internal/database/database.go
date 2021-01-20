@@ -44,6 +44,8 @@ func (d *Database) RecordIncome(ctx context.Context, i income.Income) (*income.I
 	insertQuery := `
 	INSERT INTO income (date, source, amount)
 	VALUES ($1, $2, $3)
+	ON CONFLICT(date)
+	DO UPDATE SET source=EXCLUDED.source, amount=EXCLUDED.amount
 	RETURNING id, date, source, amount;
 	`
 

@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE TABLE income(
   id SERIAL PRIMARY KEY,
-  date DATE NOT NULL,
+  date DATE UNIQUE NOT NULL,
   source TEXT NOT NULL,
   amount NUMERIC NOT NULL
 );
