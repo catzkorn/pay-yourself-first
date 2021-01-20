@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<head>
+
+
+  <script src="/budgetIncome.js"></script>
+
+  <title>Monthly Budget Planner</title>
+
+
+</head>
+
+<body>
+
+  <div class="budget-date">
+
+    <form>
+      <label for="date-month">Month:</label>
+      <select name="date-month" id="date-month">
+        <option value="01">January</option>
+        <option value="02">February</option>
+        <option value="03">March</option>
+        <option value="04">April</option>
+        <option value="05">May</option>
+        <option value="06">June</option>
+        <option value="07">July</option>
+        <option value="08">August</option>
+        <option value="09">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+    </form>
+
+    <form>
+      <label for="date-year">Year:</label>
+      <select name="date-year" id="date-year">
+        <option value="2020">2020</option>
+        <option value="2021">2021</option>
+        <option value="2022">2022</option>
+        <option value="2023">2023</option>
+      </select>
+    </form>
+
+
+  </div>
+
+
+
+  <div class="budget-income">
+
+    <form>
+
+      <label for="income-source">Type</label>
+      <input type="text" id="income-source" name="income-source">
+      <label for="income-amount">Amount</label>
+      <input type="text" id="income-amount" name="income-amount">
+      <button type="button" onclick="recordIncome()">Submit</button>
+
+    </form>
+
+  </div>
+
+
+
+
+</body>
+
+
+
+</html>

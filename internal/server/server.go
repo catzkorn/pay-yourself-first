@@ -29,7 +29,8 @@ func NewServer(dataStore DataStore) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 
 	s.router.Handle("/income", http.HandlerFunc(s.incomeHandler))
-	s.router.Handle("/", http.HandlerFunc(s.budgetHandler))
+	s.router.Handle("/api/v1/budget", http.HandlerFunc(s.budgetHandler))
+	s.router.Handle("/", http.FileServer(http.Dir("web")))
 
 	return s
 }
