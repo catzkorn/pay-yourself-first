@@ -191,6 +191,58 @@ func TestPostMonthIncome(t *testing.T) {
 
 	t.Run("checks a user can update a previously submitted income", func(t *testing.T) {
 
+		amount, _ := decimal.NewFromString("3500.00")
+		i := income.Income{
+			Date:   time.Date(2021, time.April, 1, 0, 0, 0, 0, time.UTC),
+			Source: "Salary",
+			Amount: amount,
+		}
+
+		store := &StubDatabase{income: &i}
+		server := NewServer(store)
+
+		updatedAmount, _ := decimal.NewFromString("2600.00")
+		updatedI := income.Income{
+			Date:   time.Date(2021, time.April, 1, 0, 0, 0, 0, time.UTC),
+			Source: "Salary",
+			Amount: updatedAmount,
+		}
+
+		request := newPostRecordIncomeRequest(t, updatedI)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+		assertStatus(t, response.Code, http.StatusOK)
+
+		var retrievedIncome income.Income
+
+		err := json.NewDecoder(response.Body).Decode(&retrievedIncome)
+		if err != nil {
+			t.Fatalf("unable to parse response from server into income: %v", err)
+		}
+
+		request = newPostRecordIncomeRequest(t, i)
+		response = httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+		assertStatus(t, response.Code, http.StatusOK)
+
+		if !retrievedIncome.Date.Equal(i.Date) {
+			t.Errorf("incorrect month retrieved got %v want %v", retrievedIncome.Date, i.Date)
+		}
+
+		if retrievedIncome.Amount.Equal(amount) {
+			t.Errorf("amount was not updated got %v want %v", retrievedIncome.Amount, updatedAmount)
+		}
+
+		if !retrievedIncome.Amount.Equal(updatedI.Amount) {
+			t.Errorf("updated amount was not returned got %v want %v", retrievedIncome.Amount, amount)
+		}
+
+		if retrievedIncome.Source != i.Source {
+			t.Errorf("incorrect source of income retrieved got %v want %v", retrievedIncome.Source, i.Source)
+		}
+
 	})
 }
 
