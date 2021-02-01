@@ -244,6 +244,13 @@ func TestDeleteIncome(t *testing.T) {
 		}
 
 	})
+}
+
+func TestRecordMonthSavingPercent(t *testing.T) {
+
+	t.Run("records a integer that represents a desired savings percent for a specific month", func(t *testing.T) {
+
+	})
 
 }
 
