@@ -1,0 +1,9 @@
+BEGIN;
+
+CREATE TABLE saving(
+id SERIAL PRIMARY KEY,
+percent INT NOT NULL,
+income_id SERIAL NOT NULL REFERENCES income(id)
+);
+
+COMMIT;
