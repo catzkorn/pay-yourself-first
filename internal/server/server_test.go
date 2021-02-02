@@ -218,7 +218,6 @@ func TestPostMonthIncome(t *testing.T) {
 		if retrievedIncome.Source != i.Source {
 			t.Errorf("incorrect source of income retrieved got %v want %v", retrievedIncome.Source, i.Source)
 		}
-
 	})
 
 	t.Run("checks a user can update a previously submitted income", func(t *testing.T) {
@@ -306,6 +305,41 @@ func TestGetMonthSavingPercent(t *testing.T) {
 
 		if !retrievedSaving.Date.Equal(s.Date) {
 			t.Errorf("incorrect month retrieved got %v want %v", retrievedSaving.Date, s.Date)
+		}
+
+		if retrievedSaving.Percent != s.Percent {
+			t.Errorf("incorrect percent retrieved got %v want %v", retrievedSaving.Percent, s.Percent)
+		}
+	})
+}
+
+func TestPostMonthSavingPercent(t *testing.T) {
+
+	t.Run("checks a user can submit a saving for a month", func(t *testing.T) {
+
+		s := saving.Saving{
+			Percent: 65,
+			Date:    time.Date(2022, time.May, 1, 0, 0, 0, 0, time.UTC),
+		}
+
+		store := &StubDatabase{}
+		server := NewServer(store)
+
+		request := newPostRecordSavingRequest(t, s)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+		assertStatus(t, response.Code, http.StatusOK)
+
+		var retrievedSaving saving.Saving
+
+		err := json.NewDecoder(response.Body).Decode(&retrievedSaving)
+		if err != nil {
+			t.Fatalf("unable to parse response from server into saving: %v", err)
+		}
+
+		if !retrievedSaving.Date.Equal(s.Date) {
+			t.Errorf("incorrect date retrieved got %v want %v", retrievedSaving.Date, s.Date)
 		}
 
 		if retrievedSaving.Percent != s.Percent {

@@ -84,7 +84,29 @@ func (s *Server) budgetSavingHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		s.getMonthSavingIncome(w, r)
 	case http.MethodPost:
+		s.postMonthSavingIncome(w, r)
+	}
+}
 
+func (s *Server) postMonthSavingIncome(w http.ResponseWriter, r *http.Request) {
+
+	var saving saving.Saving
+
+	err := json.NewDecoder(r.Body).Decode(&saving)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returnedSaving, err := s.dataStore.RecordMonthSavingPercent(r.Context(), saving)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(returnedSaving)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -114,7 +136,6 @@ func (s *Server) getMonthSavingIncome(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
 }
 
 func (s *Server) getMonthIncome(w http.ResponseWriter, r *http.Request) {
