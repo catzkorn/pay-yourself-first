@@ -306,7 +306,7 @@ func TestRecordMonthSavingPercent(t *testing.T) {
 		assertDatabaseError(t, err)
 	})
 
-	t.Run("records a integer that represents a 73 percent saving level for a specific month", func(t *testing.T) {
+	t.Run("updates a saving percent for a previously submitted month", func(t *testing.T) {
 
 		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
 		assertDatabaseError(t, err)
