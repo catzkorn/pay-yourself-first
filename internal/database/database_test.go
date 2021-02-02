@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/catzkorn/pay-yourself-first/internal/income"
+	"github.com/catzkorn/pay-yourself-first/internal/saving"
 	"github.com/shopspring/decimal"
 )
 
@@ -248,10 +249,99 @@ func TestDeleteIncome(t *testing.T) {
 
 func TestRecordMonthSavingPercent(t *testing.T) {
 
-	t.Run("records a integer that represents a desired savings percent for a specific month", func(t *testing.T) {
+	t.Run("records a integer that represents a 45 percent saving level for a specific month", func(t *testing.T) {
 
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
+		assertDatabaseError(t, err)
+
+		saving := saving.Saving{
+			Percent: 45,
+			Date:    time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC),
+		}
+
+		returnMonthSaving, err := store.RecordMonthSavingPercent(context.Background(), saving)
+		assertDatabaseError(t, err)
+
+		if returnMonthSaving.ID == 0 {
+			t.Errorf("id returned is not valid")
+		}
+
+		if returnMonthSaving.Percent != saving.Percent {
+			t.Errorf("incorrect saving percent returned for month got %v want %v", returnMonthSaving.Percent, saving.Percent)
+		}
+
+		if returnMonthSaving.Date != saving.Date {
+			t.Errorf("incorrect month of saving returned got %v want %v", returnMonthSaving.Date, saving.Date)
+		}
+
+		err = clearSavingTable()
+		assertDatabaseError(t, err)
 	})
 
+	t.Run("records a integer that represents a 73 percent saving level for a specific month", func(t *testing.T) {
+
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
+		assertDatabaseError(t, err)
+
+		saving := saving.Saving{
+			Percent: 73,
+			Date:    time.Date(2021, time.February, 1, 0, 0, 0, 0, time.UTC),
+		}
+
+		returnMonthSaving, err := store.RecordMonthSavingPercent(context.Background(), saving)
+		assertDatabaseError(t, err)
+
+		if returnMonthSaving.ID == 0 {
+			t.Errorf("id returned is not valid")
+		}
+
+		if returnMonthSaving.Percent != saving.Percent {
+			t.Errorf("incorrect saving percent returned for month got %v want %v", returnMonthSaving.Percent, saving.Percent)
+		}
+
+		if returnMonthSaving.Date != saving.Date {
+			t.Errorf("incorrect month of saving returned got %v want %v", returnMonthSaving.Date, saving.Date)
+		}
+		err = clearSavingTable()
+		assertDatabaseError(t, err)
+	})
+
+	t.Run("records a integer that represents a 73 percent saving level for a specific month", func(t *testing.T) {
+
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
+		assertDatabaseError(t, err)
+
+		initialSaving := saving.Saving{
+			Percent: 25,
+			Date:    time.Date(2021, time.February, 1, 0, 0, 0, 0, time.UTC),
+		}
+
+		returnMonthSaving, err := store.RecordMonthSavingPercent(context.Background(), initialSaving)
+		assertDatabaseError(t, err)
+
+		updatedSaving := saving.Saving{
+			Percent: 35,
+			Date:    time.Date(2021, time.February, 1, 0, 0, 0, 0, time.UTC),
+		}
+
+		returnUpdatedMonthSaving, err := store.RecordMonthSavingPercent(context.Background(), updatedSaving)
+		assertDatabaseError(t, err)
+
+		if returnMonthSaving.Date != initialSaving.Date {
+			t.Fatalf("incorrect month of saving returned got %v want %v", returnMonthSaving.Date, initialSaving.Date)
+		}
+
+		if returnUpdatedMonthSaving.ID != returnMonthSaving.ID {
+			t.Errorf("id returned is not as expected got %v want %v", returnUpdatedMonthSaving.ID, returnMonthSaving.ID)
+		}
+
+		if returnUpdatedMonthSaving.Percent == returnMonthSaving.Percent {
+			t.Errorf("incorrect saving percent returned for month got %v want %v", returnUpdatedMonthSaving.Percent, updatedSaving.Percent)
+		}
+
+		err = clearSavingTable()
+		assertDatabaseError(t, err)
+	})
 }
 
 func assertDatabaseError(t *testing.T, err error) {
@@ -267,6 +357,16 @@ func clearIncomeTable() error {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
 	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE income;")
+
+	return err
+}
+
+func clearSavingTable() error {
+	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_TEST_STRING"))
+	if err != nil {
+		return fmt.Errorf("unexpected connection error: %w", err)
+	}
+	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE saving;")
 
 	return err
 }

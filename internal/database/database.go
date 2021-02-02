@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/catzkorn/pay-yourself-first/internal/income"
+	"github.com/catzkorn/pay-yourself-first/internal/saving"
 	"github.com/jackc/pgtype"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/shopspring/decimal"
@@ -190,4 +191,37 @@ func (d *Database) DeleteIncome(ctx context.Context, id uint32) error {
 		return fmt.Errorf("no rows were affected by deletion request")
 	}
 	return nil
+}
+
+// Savings
+
+// RecordMonthSavingPercent inserts savings data for a specific month
+func (d *Database) RecordMonthSavingPercent(ctx context.Context, s saving.Saving) (*saving.Saving, error) {
+
+	var returnedSaving saving.Saving
+
+	insertQuery := `
+	INSERT INTO saving (percent, date)
+	VALUES ($1, $2)
+	ON CONFLICT(date)
+	DO UPDATE SET percent=EXCLUDED.percent
+	RETURNING id, percent, date;
+	`
+
+	err := d.database.QueryRowContext(
+		ctx,
+		insertQuery,
+		s.Percent,
+		s.Date,
+	).Scan(
+		&returnedSaving.ID,
+		&returnedSaving.Percent,
+		&returnedSaving.Date,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("unexpected insert error: %w", err)
+	}
+
+	return &returnedSaving, nil
 }

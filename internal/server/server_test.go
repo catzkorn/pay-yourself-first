@@ -217,6 +217,7 @@ func TestPostMonthIncome(t *testing.T) {
 		var retrievedIncome income.Income
 
 		err := json.NewDecoder(response.Body).Decode(&retrievedIncome)
+
 		if err != nil {
 			t.Fatalf("unable to parse response from server into income: %v", err)
 		}
@@ -257,7 +258,7 @@ func newMonthIncomeRequest(t testing.TB, date time.Time) *http.Request {
 
 	dateString := date.Format("2006-01-02")
 
-	request, err := http.NewRequest(http.MethodGet, "/", nil)
+	request, err := http.NewRequest(http.MethodGet, "/api/v1/budget", nil)
 	if err != nil {
 		t.Fatalf("failed to send request: %v", err)
 	}
@@ -275,7 +276,7 @@ func newPostRecordIncomeRequest(t testing.TB, income income.Income) *http.Reques
 		t.Fatalf("fail to marshal user information: %v", err)
 	}
 
-	request, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(bodyStr))
+	request, err := http.NewRequest(http.MethodPost, "/api/v1/budget", bytes.NewBuffer(bodyStr))
 	if err != nil {
 		t.Fatalf("failed to send request: %v", err)
 	}
