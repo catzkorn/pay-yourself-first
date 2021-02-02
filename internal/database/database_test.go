@@ -374,6 +374,8 @@ func TestGetMonthSavingPercent(t *testing.T) {
 			t.Errorf("incorrect savings percent returned got %v want %v", retrievedSaving.Percent, initialSaving.Percent)
 		}
 
+		err = clearSavingTable()
+		assertDatabaseError(t, err)
 	})
 
 }
