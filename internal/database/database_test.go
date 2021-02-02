@@ -363,7 +363,7 @@ func TestGetMonthSavingPercent(t *testing.T) {
 			t.Fatalf("correct date was not stored")
 		}
 
-		retrievedSaving, err := store.GetMonthSavingPercent(context.Background(), initialSaving.Date)
+		retrievedSaving, err := store.RetrieveMonthSavingPercent(context.Background(), initialSaving.Date)
 		assertDatabaseError(t, err)
 
 		if retrievedSaving.Date != initialSaving.Date {

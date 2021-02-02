@@ -226,10 +226,10 @@ func (d *Database) RecordMonthSavingPercent(ctx context.Context, s saving.Saving
 	return &returnedSaving, nil
 }
 
-// GetMonthSavingPercent returns the stored saving percent of a specific month
-func (d *Database) GetMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error) {
+// RetrieveMonthSavingPercent returns the stored saving percent of a specific month
+func (d *Database) RetrieveMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error) {
 
-	var saving saving.Saving
+	var returnedSaving saving.Saving
 
 	selectQuery := `
 	SELECT id, percent, date
@@ -242,17 +242,17 @@ func (d *Database) GetMonthSavingPercent(ctx context.Context, date time.Time) (*
 		selectQuery,
 		date,
 	).Scan(
-		&saving.ID,
-		&saving.Percent,
-		&saving.Date,
+		&returnedSaving.ID,
+		&returnedSaving.Percent,
+		&returnedSaving.Date,
 	)
 
 	switch {
 	case err == sql.ErrNoRows:
-		return nil, income.ErrNoIncomeForMonth
+		return nil, saving.ErrNoSavingForMonth
 	case err != nil:
 		return nil, fmt.Errorf("unexpected database error: %w", err)
 	default:
-		return &saving, nil
+		return &returnedSaving, nil
 	}
 }

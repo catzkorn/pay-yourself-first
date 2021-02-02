@@ -20,7 +20,7 @@ function recordIncome() {
 
 function _postIncome(date, source, amount) {
   let xhttp = new XMLHttpRequest();
-  let url = "/api/v1/budget";
+  let url = "/api/v1/budget/income";
   xhttp.open("POST", url, true);
   xhttp.setRequestHeader("Content-type", "application/json");
 
@@ -41,7 +41,7 @@ function _getMonthIncome(callback) {
   let year = document.getElementById('date-year').value;
 
   let xhttp = new XMLHttpRequest();
-  let path = '/api/v1/budget?date=' + _formatDateForQuery(month, year);
+  let path = '/api/v1/budget/income?date=' + _formatDateForQuery(month, year);
   xhttp.onreadystatechange = function() {
     if (xhttp.readyState === 4 && xhttp.status === 200) {
       let income = _convertToIncome(xhttp.responseText);

@@ -20,6 +20,8 @@ import (
 type StubDatabase struct {
 	income      *income.Income
 	incomes     []income.Income
+	saving      *saving.Saving
+	savings     []saving.Saving
 	deleteCount []uint32
 }
 
@@ -71,11 +73,32 @@ func (s *StubDatabase) DeleteIncome(_ context.Context, id uint32) error {
 }
 
 func (s *StubDatabase) RecordMonthSavingPercent(ctx context.Context, sv saving.Saving) (*saving.Saving, error) {
-	return nil, nil
+
+	if s.saving == nil {
+		s.saving = &saving.Saving{
+			ID:      1,
+			Percent: sv.Percent,
+			Date:    sv.Date,
+		}
+		return s.saving, nil
+	}
+
+	if !s.saving.Date.Equal(sv.Date) {
+		return nil, fmt.Errorf("specified month can not be updated")
+	}
+
+	s.saving.Percent = sv.Percent
+
+	return s.saving, nil
+
 }
 
-func (s *StubDatabase) GetMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error) {
-	return nil, nil
+func (s *StubDatabase) RetrieveMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error) {
+	if s.saving == nil || !date.Equal(s.saving.Date) {
+		return nil, saving.ErrNoSavingForMonth
+	}
+
+	return s.saving, nil
 }
 
 func TestGetMonthIncome(t *testing.T) {
@@ -93,7 +116,7 @@ func TestGetMonthIncome(t *testing.T) {
 
 		server := NewServer(store)
 
-		request := newMonthIncomeRequest(t, i.Date)
+		request := newGetMonthIncomeRequest(t, i.Date)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -127,7 +150,7 @@ func TestGetMonthIncome(t *testing.T) {
 
 		server := NewServer(store)
 
-		request := newMonthIncomeRequest(t, date)
+		request := newGetMonthIncomeRequest(t, date)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -256,6 +279,41 @@ func TestPostMonthIncome(t *testing.T) {
 	})
 }
 
+func TestGetMonthSavingPercent(t *testing.T) {
+
+	t.Run("retrieves a saving percent for a specific month", func(t *testing.T) {
+
+		s := saving.Saving{
+			Percent: 45,
+			Date:    time.Date(2021, time.August, 1, 0, 0, 0, 0, time.UTC),
+		}
+
+		store := &StubDatabase{saving: &s}
+		server := NewServer(store)
+
+		request := newGetMonthSavingRequest(t, s.Date)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+		assertStatus(t, response.Code, http.StatusOK)
+
+		var retrievedSaving saving.Saving
+
+		err := json.NewDecoder(response.Body).Decode(&retrievedSaving)
+		if err != nil {
+			t.Fatalf("unable to parse response from server into saving: %v", err)
+		}
+
+		if !retrievedSaving.Date.Equal(s.Date) {
+			t.Errorf("incorrect month retrieved got %v want %v", retrievedSaving.Date, s.Date)
+		}
+
+		if retrievedSaving.Percent != s.Percent {
+			t.Errorf("incorrect percent retrieved got %v want %v", retrievedSaving.Percent, s.Percent)
+		}
+	})
+}
+
 func assertStatus(t *testing.T, got, want int) {
 	t.Helper()
 	if got != want {
@@ -263,11 +321,11 @@ func assertStatus(t *testing.T, got, want int) {
 	}
 }
 
-func newMonthIncomeRequest(t testing.TB, date time.Time) *http.Request {
+func newGetMonthIncomeRequest(t testing.TB, date time.Time) *http.Request {
 
 	dateString := date.Format("2006-01-02")
 
-	request, err := http.NewRequest(http.MethodGet, "/api/v1/budget", nil)
+	request, err := http.NewRequest(http.MethodGet, "/api/v1/budget/income", nil)
 	if err != nil {
 		t.Fatalf("failed to send request: %v", err)
 	}
@@ -285,7 +343,37 @@ func newPostRecordIncomeRequest(t testing.TB, income income.Income) *http.Reques
 		t.Fatalf("fail to marshal user information: %v", err)
 	}
 
-	request, err := http.NewRequest(http.MethodPost, "/api/v1/budget", bytes.NewBuffer(bodyStr))
+	request, err := http.NewRequest(http.MethodPost, "/api/v1/budget/income", bytes.NewBuffer(bodyStr))
+	if err != nil {
+		t.Fatalf("failed to send request: %v", err)
+	}
+
+	return request
+}
+
+func newGetMonthSavingRequest(t testing.TB, date time.Time) *http.Request {
+
+	dateString := date.Format("2006-01-02")
+
+	request, err := http.NewRequest(http.MethodGet, "/api/v1/budget/saving", nil)
+	if err != nil {
+		t.Fatalf("failed to send request: %v", err)
+	}
+	requestQuery := request.URL.Query()
+	requestQuery.Set("date", dateString)
+	request.URL.RawQuery = requestQuery.Encode()
+
+	return request
+}
+
+func newPostRecordSavingRequest(t testing.TB, saving saving.Saving) *http.Request {
+
+	bodyStr, err := json.Marshal(&saving)
+	if err != nil {
+		t.Fatalf("fail to marshal user information: %v", err)
+	}
+
+	request, err := http.NewRequest(http.MethodPost, "/api/v1/budget/saving", bytes.NewBuffer(bodyStr))
 	if err != nil {
 		t.Fatalf("failed to send request: %v", err)
 	}

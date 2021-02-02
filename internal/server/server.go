@@ -23,7 +23,7 @@ type DataStore interface {
 	RetrieveMonthIncome(ctx context.Context, date time.Time) (*income.Income, error)
 	DeleteIncome(ctx context.Context, id uint32) error
 	RecordMonthSavingPercent(ctx context.Context, s saving.Saving) (*saving.Saving, error)
-	GetMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error)
+	RetrieveMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error)
 }
 
 // NewServer returns an instance of a Server
@@ -32,7 +32,8 @@ func NewServer(dataStore DataStore) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 
 	s.router.Handle("/income", http.HandlerFunc(s.incomeHandler))
-	s.router.Handle("/api/v1/budget", http.HandlerFunc(s.budgetHandler))
+	s.router.Handle("/api/v1/budget/income", http.HandlerFunc(s.budgetIncomeHandler))
+	s.router.Handle("/api/v1/budget/saving", http.HandlerFunc(s.budgetSavingHandler))
 	s.router.Handle("/", http.FileServer(http.Dir("web")))
 
 	return s
@@ -69,16 +70,26 @@ func (s *Server) processListIncome(ctx context.Context, w http.ResponseWriter) {
 	}
 }
 
-func (s *Server) budgetHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) budgetIncomeHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		s.getMonthIncome(r.Context(), w, r)
+		s.getMonthIncome(w, r)
 	case http.MethodPost:
 		s.postMonthIncome(w, r)
 	}
 }
 
-func (s *Server) getMonthIncome(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (s *Server) budgetSavingHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		s.getMonthSavingIncome(w, r)
+	case http.MethodPost:
+
+	}
+}
+
+func (s *Server) getMonthSavingIncome(w http.ResponseWriter, r *http.Request) {
+
 	dateLayout := "2006-01-02"
 	date := r.URL.Query().Get("date")
 	parsedDate, err := time.Parse(dateLayout, date)
@@ -87,7 +98,35 @@ func (s *Server) getMonthIncome(ctx context.Context, w http.ResponseWriter, r *h
 		return
 	}
 
-	monthIncome, err := s.dataStore.RetrieveMonthIncome(ctx, parsedDate)
+	monthSavingPercent, err := s.dataStore.RetrieveMonthSavingPercent(r.Context(), parsedDate)
+
+	switch {
+	case err == saving.ErrNoSavingForMonth:
+		monthSavingPercent = &saving.Saving{
+			Date: parsedDate,
+		}
+	case err != nil:
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(monthSavingPercent)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+}
+
+func (s *Server) getMonthIncome(w http.ResponseWriter, r *http.Request) {
+	dateLayout := "2006-01-02"
+	date := r.URL.Query().Get("date")
+	parsedDate, err := time.Parse(dateLayout, date)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	monthIncome, err := s.dataStore.RetrieveMonthIncome(r.Context(), parsedDate)
 
 	switch {
 	case err == income.ErrNoIncomeForMonth:
