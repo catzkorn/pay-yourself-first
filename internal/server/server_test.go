@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/catzkorn/pay-yourself-first/internal/income"
+	"github.com/catzkorn/pay-yourself-first/internal/saving"
 	"github.com/shopspring/decimal"
 )
 
@@ -67,6 +68,14 @@ func (s *StubDatabase) ListIncomes(_ context.Context) ([]income.Income, error) {
 func (s *StubDatabase) DeleteIncome(_ context.Context, id uint32) error {
 	s.deleteCount = append(s.deleteCount, id)
 	return nil
+}
+
+func (s *StubDatabase) RecordMonthSavingPercent(ctx context.Context, sv saving.Saving) (*saving.Saving, error) {
+	return nil, nil
+}
+
+func (s *StubDatabase) GetMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error) {
+	return nil, nil
 }
 
 func TestGetMonthIncome(t *testing.T) {

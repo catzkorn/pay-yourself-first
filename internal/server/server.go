@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/catzkorn/pay-yourself-first/internal/income"
+	"github.com/catzkorn/pay-yourself-first/internal/saving"
 )
 
 // Server is the HTTP interface
@@ -21,6 +22,8 @@ type DataStore interface {
 	ListIncomes(ctx context.Context) ([]income.Income, error)
 	RetrieveMonthIncome(ctx context.Context, date time.Time) (*income.Income, error)
 	DeleteIncome(ctx context.Context, id uint32) error
+	RecordMonthSavingPercent(ctx context.Context, s saving.Saving) (*saving.Saving, error)
+	GetMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error)
 }
 
 // NewServer returns an instance of a Server

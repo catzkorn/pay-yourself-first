@@ -344,6 +344,40 @@ func TestRecordMonthSavingPercent(t *testing.T) {
 	})
 }
 
+func TestGetMonthSavingPercent(t *testing.T) {
+
+	t.Run("retrieves a percent for a specific month", func(t *testing.T) {
+
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
+		assertDatabaseError(t, err)
+
+		initialSaving := saving.Saving{
+			Percent: 25,
+			Date:    time.Date(2021, time.February, 1, 0, 0, 0, 0, time.UTC),
+		}
+
+		returnMonthSaving, err := store.RecordMonthSavingPercent(context.Background(), initialSaving)
+		assertDatabaseError(t, err)
+
+		if returnMonthSaving.Date != initialSaving.Date {
+			t.Fatalf("correct date was not stored")
+		}
+
+		retrievedSaving, err := store.GetMonthSavingPercent(context.Background(), initialSaving.Date)
+		assertDatabaseError(t, err)
+
+		if retrievedSaving.Date != initialSaving.Date {
+			t.Errorf("incorrect date retrieved got %v want %v", retrievedSaving.Date, initialSaving.Date)
+		}
+
+		if retrievedSaving.Percent != initialSaving.Percent {
+			t.Errorf("incorrect savings percent returned got %v want %v", retrievedSaving.Percent, initialSaving.Percent)
+		}
+
+	})
+
+}
+
 func assertDatabaseError(t *testing.T, err error) {
 	t.Helper()
 	if err != nil {
