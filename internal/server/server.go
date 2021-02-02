@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -84,15 +85,16 @@ func (s *Server) budgetSavingHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		s.getMonthSavingIncome(w, r)
 	case http.MethodPost:
-		s.postMonthSavingIncome(w, r)
+		s.postMonthSaving(w, r)
 	}
 }
 
-func (s *Server) postMonthSavingIncome(w http.ResponseWriter, r *http.Request) {
+func (s *Server) postMonthSaving(w http.ResponseWriter, r *http.Request) {
 
 	var saving saving.Saving
 
 	err := json.NewDecoder(r.Body).Decode(&saving)
+	fmt.Println(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
