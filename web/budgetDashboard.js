@@ -8,7 +8,6 @@ function loadDashboardData() {
 
 function _getDashboardData(callback) {
 
-  console.log("Cats");
   let month = document.getElementById('date-month').value;
   let year = document.getElementById('date-year').value;
 
