@@ -24,6 +24,8 @@ type StubDatabase struct {
 	saving      *saving.Saving
 	savings     []saving.Saving
 	deleteCount []uint32
+	expense     *expenses.Expense
+	expenses    []expenses.Expense
 }
 
 func (s *StubDatabase) RetrieveMonthIncome(_ context.Context, date time.Time) (*income.Income, error) {
@@ -103,7 +105,34 @@ func (s *StubDatabase) RetrieveMonthSavingPercent(ctx context.Context, date time
 }
 
 func (s *StubDatabase) RecordExpense(ctx context.Context, e expenses.Expense) (*expenses.Expense, error) {
-	return nil, nil
+	if s.expense == nil {
+		s.expense = &expenses.Expense{
+			ID:         1,
+			Date:       e.Date,
+			Source:     e.Source,
+			Amount:     e.Amount,
+			Occurrence: e.Occurrence,
+		}
+		return s.expense, nil
+	}
+
+	if !s.expense.Date.Equal(e.Date) {
+		return nil, fmt.Errorf("specified month can not be updated")
+	}
+
+	s.expense.Amount = e.Amount
+	s.expense.Occurrence = e.Occurrence
+	s.expense.Source = e.Source
+
+	return s.expense, nil
+}
+
+func (s *StubDatabase) RetrieveExpenses(ctx context.Context, date time.Time) (*expenses.Expense, error) {
+	if s.expense == nil || !date.Equal(s.expense.Date) {
+		return nil, expenses.ErrNoExpensesForMonth
+	}
+
+	return s.expense, nil
 }
 
 func TestGetDashboardData(t *testing.T) {
@@ -300,6 +329,55 @@ func TestPostMonthSavingPercent(t *testing.T) {
 	})
 }
 
+func TestPostRecordExpense(t *testing.T) {
+
+	t.Run("", func(t *testing.T) {
+
+		amount, _ := decimal.NewFromString("80.00")
+
+		e := expenses.Expense{
+			Date:       time.Date(2022, time.May, 1, 0, 0, 0, 0, time.UTC),
+			Source:     "gas & electric",
+			Amount:     amount,
+			Occurrence: "monthly",
+		}
+
+		store := &StubDatabase{expense: &e}
+		server := NewServer(store)
+
+		request := newPostRecordExpensesRequest(t, e)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+		assertStatus(t, response.Code, http.StatusOK)
+
+		var retrievedExpense expenses.Expense
+
+		err := json.NewDecoder(response.Body).Decode(&retrievedExpense)
+		if err != nil {
+			t.Fatalf("unable to parse response from server into expense: %v", err)
+		}
+
+		if !retrievedExpense.Date.Equal(e.Date) {
+			t.Errorf("incorrect date retrieved got %v want %v", retrievedExpense.Date, e.Date)
+		}
+
+		if retrievedExpense.Source != e.Source {
+			t.Errorf("source does not match expected source got %v want %v", retrievedExpense.Source, e.Source)
+		}
+
+		if !retrievedExpense.Amount.Equal(e.Amount) {
+			t.Errorf("amount does not match expected amount got %v want %v", retrievedExpense.Amount, e.Amount)
+		}
+
+		if retrievedExpense.Occurrence != e.Occurrence {
+			t.Errorf("occurrence does not match expected occurrence got %v want %v", retrievedExpense.Occurrence, e.Occurrence)
+		}
+
+	})
+
+}
+
 func assertStatus(t *testing.T, got, want int) {
 	t.Helper()
 	if got != want {
@@ -345,6 +423,21 @@ func newPostRecordSavingRequest(t testing.TB, saving saving.Saving) *http.Reques
 	}
 
 	request, err := http.NewRequest(http.MethodPost, "/api/v1/budget/saving", bytes.NewBuffer(bodyStr))
+	if err != nil {
+		t.Fatalf("failed to send request: %v", err)
+	}
+
+	return request
+}
+
+func newPostRecordExpensesRequest(t testing.TB, expense expenses.Expense) *http.Request {
+
+	bodyStr, err := json.Marshal(&expense)
+	if err != nil {
+		t.Fatalf("fail to marshal user information: %v", err)
+	}
+
+	request, err := http.NewRequest(http.MethodPost, "/api/v1/budget/expenses", bytes.NewBuffer(bodyStr))
 	if err != nil {
 		t.Fatalf("failed to send request: %v", err)
 	}

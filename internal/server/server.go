@@ -35,6 +35,7 @@ type DataStore interface {
 	RecordMonthSavingPercent(ctx context.Context, s saving.Saving) (*saving.Saving, error)
 	RetrieveMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error)
 	RecordExpense(ctx context.Context, e expenses.Expense) (*expenses.Expense, error)
+	RetrieveExpenses(ctx context.Context, date time.Time) (*expenses.Expense, error)
 }
 
 // NewServer returns an instance of a Server
@@ -46,6 +47,7 @@ func NewServer(dataStore DataStore) *Server {
 	s.router.Handle("/api/v1/budget/income", http.HandlerFunc(s.budgetIncomeHandler))
 	s.router.Handle("/api/v1/budget/saving", http.HandlerFunc(s.budgetSavingHandler))
 	s.router.Handle("/api/v1/budget/dashboard", http.HandlerFunc(s.budgetDashboardHandler))
+	s.router.Handle("/api/v1/budget/expenses", http.HandlerFunc(s.budgetExpensesHandler))
 	s.router.Handle("/", http.FileServer(http.Dir("web")))
 
 	return s
@@ -86,6 +88,36 @@ func (s *Server) budgetDashboardHandler(w http.ResponseWriter, r *http.Request) 
 	switch r.Method {
 	case http.MethodGet:
 		s.getBudgetDashboardData(w, r)
+	}
+}
+
+func (s *Server) budgetExpensesHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		s.postBudgetExpenses(w, r)
+	}
+}
+
+func (s *Server) postBudgetExpenses(w http.ResponseWriter, r *http.Request) {
+
+	var expense expenses.Expense
+
+	err := json.NewDecoder(r.Body).Decode(&expense)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returnedExpense, err := s.dataStore.RecordExpense(r.Context(), expense)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(returnedExpense)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
