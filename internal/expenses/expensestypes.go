@@ -1,6 +1,7 @@
 package expenses
 
 import (
+	"errors"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -14,3 +15,7 @@ type Expense struct {
 	Amount     decimal.Decimal
 	Occurrence string
 }
+
+// ErrNoSavingForMonth is the error returned when no data could be
+// found for the month requested
+var ErrNoExpensesForMonth = errors.New("no expenses data for selected month")

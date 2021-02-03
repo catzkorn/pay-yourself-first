@@ -345,7 +345,7 @@ func TestRecordMonthSavingPercent(t *testing.T) {
 	})
 }
 
-func TestGetMonthSavingPercent(t *testing.T) {
+func TestRetrieveMonthSavingPercent(t *testing.T) {
 
 	t.Run("retrieves a percent for a specific month", func(t *testing.T) {
 
@@ -398,10 +398,60 @@ func TestRecordExpenses(t *testing.T) {
 		returnedExpense, err := store.RecordExpense(context.Background(), expense)
 		assertDatabaseError(t, err)
 
+		if returnedExpense.ID == 0 {
+			t.Fatalf("expense not given id")
+		}
+
 		if !returnedExpense.Date.Equal(expense.Date) {
 			t.Errorf("incorrect date retrieved got %v want %v", returnedExpense.Date, expense.Date)
 		}
 
+		if returnedExpense.Source != expense.Source {
+			t.Errorf("incorrect source returned got %v want %v", returnedExpense.Source, expense.Source)
+		}
+
+		if !returnedExpense.Amount.Equal(expense.Amount) {
+			t.Errorf("incorrect amount returned got %v want %v", returnedExpense.Amount, expense.Amount)
+		}
+
+		err = clearExpensesTable()
+		assertDatabaseError(t, err)
+
+	})
+}
+
+func TestRetrieveExpenses(t *testing.T) {
+
+	t.Run("retrieves an expense for a specific month", func(t *testing.T) {
+
+		date := time.Date(2021, time.August, 1, 0, 0, 0, 0, time.UTC)
+
+		amount, _ := decimal.NewFromString("700.50")
+		expense := expenses.Expense{
+			Date:       date,
+			Source:     "Mortgage",
+			Amount:     amount,
+			Occurrence: "monthly",
+		}
+
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
+		assertDatabaseError(t, err)
+
+		returnedExpense, err := store.RecordExpense(context.Background(), expense)
+		assertDatabaseError(t, err)
+
+		retrievedExpense, err := store.RetrieveExpenses(context.Background(), date)
+		assertDatabaseError(t, err)
+
+		if !retrievedExpense.Date.Equal(date) {
+			t.Fatalf("incorrect date retrieved got %v want %v", retrievedExpense.Date, date)
+		}
+
+		if retrievedExpense.ID != returnedExpense.ID {
+			t.Errorf("incorrect id returned got %v want %v", retrievedExpense.ID, returnedExpense.ID)
+		}
+		err = clearExpensesTable()
+		assertDatabaseError(t, err)
 	})
 
 }
@@ -429,6 +479,16 @@ func clearSavingTable() error {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
 	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE saving;")
+
+	return err
+}
+
+func clearExpensesTable() error {
+	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_TEST_STRING"))
+	if err != nil {
+		return fmt.Errorf("unexpected connection error: %w", err)
+	}
+	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE expenses;")
 
 	return err
 }

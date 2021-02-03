@@ -290,3 +290,37 @@ func (d *Database) RecordExpense(ctx context.Context, e expenses.Expense) (*expe
 
 	return &returnedExpense, nil
 }
+
+// RetrieveExpenses returns expenses for a specific date
+func (d *Database) RetrieveExpenses(ctx context.Context, date time.Time) (*expenses.Expense, error) {
+
+	var expense expenses.Expense
+
+	selectQuery := `
+	SELECT id, date, source, amount, occurrence
+	FROM expenses
+	WHERE date = $1
+	`
+
+	err := d.database.QueryRowContext(
+		ctx,
+		selectQuery,
+		date,
+	).Scan(
+		&expense.ID,
+		&expense.Date,
+		&expense.Source,
+		&expense.Amount,
+		&expense.Occurrence,
+	)
+
+	switch {
+
+	case err == sql.ErrNoRows:
+		return nil, expenses.ErrNoExpensesForMonth
+	case err != nil:
+		return nil, fmt.Errorf("unexpected database error: %w", err)
+	default:
+		return &expense, nil
+	}
+}
