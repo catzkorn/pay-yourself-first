@@ -101,9 +101,9 @@ func (s *StubDatabase) RetrieveMonthSavingPercent(ctx context.Context, date time
 	return s.saving, nil
 }
 
-func TestGetMonthIncome(t *testing.T) {
+func TestGetDashboardData(t *testing.T) {
 
-	t.Run("retrieves an income for a specific month", func(t *testing.T) {
+	t.Run("retrieves saving, saving total and income information for a specific month", func(t *testing.T) {
 
 		amount, _ := decimal.NewFromString("3500.00")
 		i := income.Income{
@@ -112,71 +112,53 @@ func TestGetMonthIncome(t *testing.T) {
 			Amount: amount,
 		}
 
-		store := &StubDatabase{income: &i}
+		s := saving.Saving{
+			Percent: 45,
+			Date:    time.Date(2021, time.April, 1, 0, 0, 0, 0, time.UTC),
+		}
+
+		store := &StubDatabase{income: &i, saving: &s}
 
 		server := NewServer(store)
 
-		request := newGetMonthIncomeRequest(t, i.Date)
+		request := newGetDashboardData(t, i.Date)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 		assertStatus(t, response.Code, http.StatusOK)
 
-		var retrievedIncome income.Income
+		var dashboard Dashboard
 
-		err := json.NewDecoder(response.Body).Decode(&retrievedIncome)
+		err := json.NewDecoder(response.Body).Decode(&dashboard)
 		if err != nil {
 			t.Fatalf("unable to parse response from server into income: %v", err)
 		}
 
-		if !retrievedIncome.Date.Equal(i.Date) {
-			t.Errorf("incorrect month retrieved got %v want %v", retrievedIncome.Date, i.Date)
+		if !dashboard.Income.Date.Equal(dashboard.Saving.Date) {
+			t.Errorf("income and saving dates do not match got %v want %v", dashboard.Income.Date, dashboard.Saving.Date)
 		}
 
-		if !retrievedIncome.Amount.Equal(i.Amount) {
-			t.Errorf("incorrect amount retrieved got %v want %v", retrievedIncome.Amount, i.Amount)
+		if !dashboard.Income.Date.Equal(i.Date) {
+			t.Errorf("income date is incorrect %v want %v", dashboard.Income.Date, i.Date)
+		}
+		if !dashboard.Income.Amount.Equal(i.Amount) {
+			t.Errorf("incorrect amount retrieved got %v want %v", dashboard.Income.Amount, i.Amount)
 		}
 
-		if retrievedIncome.Source != i.Source {
-			t.Errorf("incorrect source of income retrieved got %v want %v", retrievedIncome.Source, i.Source)
+		if dashboard.Income.Source != i.Source {
+			t.Errorf("incorrect source of income retrieved got %v want %v", dashboard.Income.Source, i.Source)
 		}
+
+		if !dashboard.Saving.Date.Equal(s.Date) {
+			t.Errorf("incorrect month retrieved got %v want %v", dashboard.Saving.Date, s.Date)
+		}
+
+		if dashboard.Saving.Percent != s.Percent {
+			t.Errorf("incorrect percent retrieved got %v want %v", dashboard.Saving.Percent, s.Percent)
+		}
+
 	})
 
-	t.Run("returns an income struct with only date if data for that month does not yet exist", func(t *testing.T) {
-
-		date := time.Date(2021, time.April, 1, 0, 0, 0, 0, time.UTC)
-
-		store := &StubDatabase{}
-
-		server := NewServer(store)
-
-		request := newGetMonthIncomeRequest(t, date)
-		response := httptest.NewRecorder()
-
-		server.ServeHTTP(response, request)
-		assertStatus(t, response.Code, http.StatusOK)
-
-		var retrievedIncome income.Income
-
-		err := json.NewDecoder(response.Body).Decode(&retrievedIncome)
-		if err != nil {
-			t.Fatalf("unable to parse response from server into income: %v", err)
-		}
-
-		if !retrievedIncome.Date.Equal(date) {
-			t.Errorf("incorrect month retrieved got %v want %v", retrievedIncome.Date, date)
-		}
-
-		amount, _ := decimal.NewFromString("0.00")
-
-		if !retrievedIncome.Amount.Equal(amount) {
-			t.Errorf("incorrect amount retrieved got %v want %v", retrievedIncome.Amount, amount)
-		}
-
-		if retrievedIncome.Source != "" {
-			t.Errorf("incorrect source of income retrieved got %v want %v", retrievedIncome.Source, "")
-		}
-	})
 }
 
 func TestPostMonthIncome(t *testing.T) {
@@ -278,41 +260,6 @@ func TestPostMonthIncome(t *testing.T) {
 	})
 }
 
-func TestGetMonthSavingPercent(t *testing.T) {
-
-	t.Run("retrieves a saving percent for a specific month", func(t *testing.T) {
-
-		s := saving.Saving{
-			Percent: 45,
-			Date:    time.Date(2021, time.August, 1, 0, 0, 0, 0, time.UTC),
-		}
-
-		store := &StubDatabase{saving: &s}
-		server := NewServer(store)
-
-		request := newGetMonthSavingRequest(t, s.Date)
-		response := httptest.NewRecorder()
-
-		server.ServeHTTP(response, request)
-		assertStatus(t, response.Code, http.StatusOK)
-
-		var retrievedSaving saving.Saving
-
-		err := json.NewDecoder(response.Body).Decode(&retrievedSaving)
-		if err != nil {
-			t.Fatalf("unable to parse response from server into saving: %v", err)
-		}
-
-		if !retrievedSaving.Date.Equal(s.Date) {
-			t.Errorf("incorrect month retrieved got %v want %v", retrievedSaving.Date, s.Date)
-		}
-
-		if retrievedSaving.Percent != s.Percent {
-			t.Errorf("incorrect percent retrieved got %v want %v", retrievedSaving.Percent, s.Percent)
-		}
-	})
-}
-
 func TestPostMonthSavingPercent(t *testing.T) {
 
 	t.Run("checks a user can submit a saving for a month", func(t *testing.T) {
@@ -355,11 +302,11 @@ func assertStatus(t *testing.T, got, want int) {
 	}
 }
 
-func newGetMonthIncomeRequest(t testing.TB, date time.Time) *http.Request {
+func newGetDashboardData(t testing.TB, date time.Time) *http.Request {
 
 	dateString := date.Format("2006-01-02")
 
-	request, err := http.NewRequest(http.MethodGet, "/api/v1/budget/income", nil)
+	request, err := http.NewRequest(http.MethodGet, "/api/v1/budget/dashboard", nil)
 	if err != nil {
 		t.Fatalf("failed to send request: %v", err)
 	}
@@ -381,21 +328,6 @@ func newPostRecordIncomeRequest(t testing.TB, income income.Income) *http.Reques
 	if err != nil {
 		t.Fatalf("failed to send request: %v", err)
 	}
-
-	return request
-}
-
-func newGetMonthSavingRequest(t testing.TB, date time.Time) *http.Request {
-
-	dateString := date.Format("2006-01-02")
-
-	request, err := http.NewRequest(http.MethodGet, "/api/v1/budget/saving", nil)
-	if err != nil {
-		t.Fatalf("failed to send request: %v", err)
-	}
-	requestQuery := request.URL.Query()
-	requestQuery.Set("date", dateString)
-	request.URL.RawQuery = requestQuery.Encode()
 
 	return request
 }
