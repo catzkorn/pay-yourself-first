@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/catzkorn/pay-yourself-first/internal/expenses"
 	"github.com/catzkorn/pay-yourself-first/internal/income"
 	"github.com/catzkorn/pay-yourself-first/internal/saving"
 	"github.com/shopspring/decimal"
@@ -33,6 +34,7 @@ type DataStore interface {
 	DeleteIncome(ctx context.Context, id uint32) error
 	RecordMonthSavingPercent(ctx context.Context, s saving.Saving) (*saving.Saving, error)
 	RetrieveMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error)
+	RecordExpense(ctx context.Context, e expenses.Expense) (*expenses.Expense, error)
 }
 
 // NewServer returns an instance of a Server

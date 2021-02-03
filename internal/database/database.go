@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/catzkorn/pay-yourself-first/internal/expenses"
 	"github.com/catzkorn/pay-yourself-first/internal/income"
 	"github.com/catzkorn/pay-yourself-first/internal/saving"
 	"github.com/jackc/pgtype"
@@ -255,4 +256,37 @@ func (d *Database) RetrieveMonthSavingPercent(ctx context.Context, date time.Tim
 	default:
 		return &returnedSaving, nil
 	}
+}
+
+// RecordExpense records
+func (d *Database) RecordExpense(ctx context.Context, e expenses.Expense) (*expenses.Expense, error) {
+
+	var returnedExpense expenses.Expense
+
+	insertQuery := `
+	INSERT INTO expenses (date, source, amount, occurrence)
+	VALUES ($1, $2, $3, $4)
+	RETURNING id, date, source, amount, occurrence
+	`
+
+	err := d.database.QueryRowContext(
+		ctx,
+		insertQuery,
+		e.Date,
+		e.Source,
+		e.Amount,
+		e.Occurrence,
+	).Scan(
+		&returnedExpense.ID,
+		&returnedExpense.Date,
+		&returnedExpense.Source,
+		&returnedExpense.Amount,
+		&returnedExpense.Occurrence,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("unexpected insert error: %w", err)
+	}
+
+	return &returnedExpense, nil
 }

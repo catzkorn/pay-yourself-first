@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/catzkorn/pay-yourself-first/internal/expenses"
 	"github.com/catzkorn/pay-yourself-first/internal/income"
 	"github.com/catzkorn/pay-yourself-first/internal/saving"
 	"github.com/shopspring/decimal"
@@ -99,6 +100,10 @@ func (s *StubDatabase) RetrieveMonthSavingPercent(ctx context.Context, date time
 	}
 
 	return s.saving, nil
+}
+
+func (s *StubDatabase) RecordExpense(ctx context.Context, e expenses.Expense) (*expenses.Expense, error) {
+	return nil, nil
 }
 
 func TestGetDashboardData(t *testing.T) {

@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/catzkorn/pay-yourself-first/internal/expenses"
 	"github.com/catzkorn/pay-yourself-first/internal/income"
 	"github.com/catzkorn/pay-yourself-first/internal/saving"
 	"github.com/shopspring/decimal"
@@ -376,6 +377,31 @@ func TestGetMonthSavingPercent(t *testing.T) {
 
 		err = clearSavingTable()
 		assertDatabaseError(t, err)
+	})
+}
+
+func TestRecordExpenses(t *testing.T) {
+
+	t.Run("record an expense for a specific month", func(t *testing.T) {
+
+		amount, _ := decimal.NewFromString("700.50")
+		expense := expenses.Expense{
+			Date:       time.Date(2021, time.February, 1, 0, 0, 0, 0, time.UTC),
+			Source:     "Mortgage",
+			Amount:     amount,
+			Occurrence: "monthly",
+		}
+
+		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
+		assertDatabaseError(t, err)
+
+		returnedExpense, err := store.RecordExpense(context.Background(), expense)
+		assertDatabaseError(t, err)
+
+		if !returnedExpense.Date.Equal(expense.Date) {
+			t.Errorf("incorrect date retrieved got %v want %v", returnedExpense.Date, expense.Date)
+		}
+
 	})
 
 }
