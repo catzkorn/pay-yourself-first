@@ -104,7 +104,7 @@ func (s *StubDatabase) RetrieveMonthSavingPercent(ctx context.Context, date time
 	return s.saving, nil
 }
 
-func (s *StubDatabase) RecordExpense(ctx context.Context, e expenses.Expense) (*expenses.Expense, error) {
+func (s *StubDatabase) RecordMonthExpenses(ctx context.Context, e expenses.Expense) (*expenses.Expense, error) {
 	if s.expense == nil {
 		s.expense = &expenses.Expense{
 			ID:         1,
@@ -127,7 +127,7 @@ func (s *StubDatabase) RecordExpense(ctx context.Context, e expenses.Expense) (*
 	return s.expense, nil
 }
 
-func (s *StubDatabase) RetrieveExpenses(ctx context.Context, date time.Time) (*expenses.Expense, error) {
+func (s *StubDatabase) RetrieveMonthExpenses(ctx context.Context, date time.Time) (*expenses.Expense, error) {
 	if s.expense == nil || !date.Equal(s.expense.Date) {
 		return nil, expenses.ErrNoExpensesForMonth
 	}

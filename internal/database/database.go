@@ -259,7 +259,7 @@ func (d *Database) RetrieveMonthSavingPercent(ctx context.Context, date time.Tim
 }
 
 // RecordExpense records
-func (d *Database) RecordExpense(ctx context.Context, e expenses.Expense) (*expenses.Expense, error) {
+func (d *Database) RecordMonthExpenses(ctx context.Context, e expenses.Expense) (*expenses.Expense, error) {
 
 	var returnedExpense expenses.Expense
 
@@ -292,7 +292,7 @@ func (d *Database) RecordExpense(ctx context.Context, e expenses.Expense) (*expe
 }
 
 // RetrieveExpenses returns expenses for a specific date
-func (d *Database) RetrieveExpenses(ctx context.Context, date time.Time) (*expenses.Expense, error) {
+func (d *Database) RetrieveMonthExpenses(ctx context.Context, date time.Time) (*expenses.Expense, error) {
 
 	var expense expenses.Expense
 

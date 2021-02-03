@@ -24,6 +24,7 @@ type Dashboard struct {
 	Saving      *saving.Saving
 	SavingTotal decimal.Decimal
 	Income      *income.Income
+	Expense     *expenses.Expense
 }
 
 // DataStore defines the interface to persist data
@@ -34,8 +35,8 @@ type DataStore interface {
 	DeleteIncome(ctx context.Context, id uint32) error
 	RecordMonthSavingPercent(ctx context.Context, s saving.Saving) (*saving.Saving, error)
 	RetrieveMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error)
-	RecordExpense(ctx context.Context, e expenses.Expense) (*expenses.Expense, error)
-	RetrieveExpenses(ctx context.Context, date time.Time) (*expenses.Expense, error)
+	RecordMonthExpenses(ctx context.Context, e expenses.Expense) (*expenses.Expense, error)
+	RetrieveMonthExpenses(ctx context.Context, date time.Time) (*expenses.Expense, error)
 }
 
 // NewServer returns an instance of a Server
@@ -108,7 +109,7 @@ func (s *Server) postBudgetExpenses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	returnedExpense, err := s.dataStore.RecordExpense(r.Context(), expense)
+	returnedExpense, err := s.dataStore.RecordMonthExpenses(r.Context(), expense)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -161,10 +162,23 @@ func (s *Server) getBudgetDashboardData(w http.ResponseWriter, r *http.Request) 
 
 	monthSavingValue := monthIncome.Amount.Mul(percent)
 
+	monthExpense, err := s.dataStore.RetrieveMonthExpenses(r.Context(), parsedDate)
+
+	switch {
+	case err == expenses.ErrNoExpensesForMonth:
+		monthExpense = &expenses.Expense{
+			Date: parsedDate,
+		}
+	case err != nil:
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	dashboard := Dashboard{
 		Saving:      monthSaving,
 		SavingTotal: monthSavingValue,
 		Income:      monthIncome,
+		Expense:     monthExpense,
 	}
 
 	err = json.NewEncoder(w).Encode(dashboard)

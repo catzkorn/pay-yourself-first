@@ -395,7 +395,7 @@ func TestRecordExpenses(t *testing.T) {
 		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
 		assertDatabaseError(t, err)
 
-		returnedExpense, err := store.RecordExpense(context.Background(), expense)
+		returnedExpense, err := store.RecordMonthExpenses(context.Background(), expense)
 		assertDatabaseError(t, err)
 
 		if returnedExpense.ID == 0 {
@@ -437,10 +437,10 @@ func TestRetrieveExpenses(t *testing.T) {
 		store, err := NewDatabaseConnection("DATABASE_CONN_TEST_STRING")
 		assertDatabaseError(t, err)
 
-		returnedExpense, err := store.RecordExpense(context.Background(), expense)
+		returnedExpense, err := store.RecordMonthExpenses(context.Background(), expense)
 		assertDatabaseError(t, err)
 
-		retrievedExpense, err := store.RetrieveExpenses(context.Background(), date)
+		retrievedExpense, err := store.RetrieveMonthExpenses(context.Background(), date)
 		assertDatabaseError(t, err)
 
 		if !retrievedExpense.Date.Equal(date) {
