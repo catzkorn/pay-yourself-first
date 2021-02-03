@@ -1,10 +1,3 @@
-
-
-window.addEventListener('load', function() {
-  loadMonthIncome();
-});
-
-
 // Record monthly incomes
 
 function recordIncome() {
@@ -29,51 +22,9 @@ function _postIncome(date, source, amount) {
 }
 
 
-// Load month incomes
-
-function loadMonthIncome() {
-  _getMonthIncome(_showMonthIncome);
-}
-
-function _getMonthIncome(callback) {
-
-  let month = document.getElementById('date-month').value;
-  let year = document.getElementById('date-year').value;
-
-  let xhttp = new XMLHttpRequest();
-  let path = '/api/v1/budget/income?date=' + _formatDateForQuery(month, year);
-  xhttp.onreadystatechange = function() {
-    if (xhttp.readyState === 4 && xhttp.status === 200) {
-      let income = _convertToIncome(xhttp.responseText);
-      callback(income);
-    }
-  };
-  xhttp.open("GET", path, true);
-  xhttp.send();
-}
-
-function _convertToIncome(response) {
-  let resIncome = JSON.parse(response);
-
-  return resIncome;
-}
-
-
-
-function _showMonthIncome(income) {
-  document.getElementById('income-source').value = income.Source;
-  document.getElementById('income-amount').value = income.Amount;
-}
-
-
-
-
 // Helper functions
 
 function _formatDateForJSON(month, year) {
   return year + "-" + month + "-" + "01" + "T00:00:00Z";
 }
 
-function _formatDateForQuery(month, year) {
-  return year + "-" + month + "-" + "01";
-}

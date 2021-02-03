@@ -9,12 +9,20 @@ import (
 
 	"github.com/catzkorn/pay-yourself-first/internal/income"
 	"github.com/catzkorn/pay-yourself-first/internal/saving"
+	"github.com/shopspring/decimal"
 )
 
 // Server is the HTTP interface
 type Server struct {
 	dataStore DataStore
 	router    *http.ServeMux
+}
+
+// Dashboard defines the information needed for the budget dashboard
+type Dashboard struct {
+	Saving      *saving.Saving
+	SavingTotal decimal.Decimal
+	Income      *income.Income
 }
 
 // DataStore defines the interface to persist data
@@ -35,6 +43,7 @@ func NewServer(dataStore DataStore) *Server {
 	s.router.Handle("/income", http.HandlerFunc(s.incomeHandler))
 	s.router.Handle("/api/v1/budget/income", http.HandlerFunc(s.budgetIncomeHandler))
 	s.router.Handle("/api/v1/budget/saving", http.HandlerFunc(s.budgetSavingHandler))
+	s.router.Handle("/api/v1/budget/dashboard", http.HandlerFunc(s.budgetDashboardHandler))
 	s.router.Handle("/", http.FileServer(http.Dir("web")))
 
 	return s
@@ -71,6 +80,66 @@ func (s *Server) processListIncome(ctx context.Context, w http.ResponseWriter) {
 	}
 }
 
+func (s *Server) budgetDashboardHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		s.getBudgetDashboardData(w, r)
+	}
+}
+
+func (s *Server) getBudgetDashboardData(w http.ResponseWriter, r *http.Request) {
+
+	dateLayout := "2006-01-02"
+	date := r.URL.Query().Get("date")
+	parsedDate, err := time.Parse(dateLayout, date)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	monthSaving, err := s.dataStore.RetrieveMonthSavingPercent(r.Context(), parsedDate)
+
+	switch {
+	case err == saving.ErrNoSavingForMonth:
+		monthSaving = &saving.Saving{
+			Date: parsedDate,
+		}
+	case err != nil:
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	monthIncome, err := s.dataStore.RetrieveMonthIncome(r.Context(), parsedDate)
+
+	switch {
+	case err == income.ErrNoIncomeForMonth:
+		monthIncome = &income.Income{
+			Date: parsedDate,
+		}
+	case err != nil:
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	percent := decimal.NewFromInt(int64(monthSaving.Percent))
+	oneHundred := decimal.NewFromInt(100)
+	percent = percent.Div(oneHundred)
+
+	monthSavingValue := monthIncome.Amount.Mul(percent)
+
+	dashboard := Dashboard{
+		Saving:      monthSaving,
+		SavingTotal: monthSavingValue,
+		Income:      monthIncome,
+	}
+
+	err = json.NewEncoder(w).Encode(dashboard)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 func (s *Server) budgetIncomeHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -83,7 +152,7 @@ func (s *Server) budgetIncomeHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) budgetSavingHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		s.getMonthSavingIncome(w, r)
+		s.getMonthSaving(w, r)
 	case http.MethodPost:
 		s.postMonthSaving(w, r)
 	}
@@ -112,7 +181,7 @@ func (s *Server) postMonthSaving(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) getMonthSavingIncome(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getMonthSaving(w http.ResponseWriter, r *http.Request) {
 
 	dateLayout := "2006-01-02"
 	date := r.URL.Query().Get("date")

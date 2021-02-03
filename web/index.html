@@ -5,6 +5,8 @@
 
   <script src="/budgetIncome.js"></script>
   <script src="/budgetSaving.js"></script>
+  <script src="/budgetDashboard.js"></script>
+
 
   <title>Pay Yourself First</title>
 
@@ -17,19 +19,27 @@
     <h1>Budget Dashboard</h1>
 
 
-    <div class="budget-date" onclick="loadMonthIncome(); loadMonthSaving()">
+    <div class="budget-date" onclick="loadDashboardData()">
 
-      <h4>Monthly Income</h4>
-      <h4>Monthly Expenses</h4>
-      <h4>Monthly Flexible Spending</h4>
-      <h4>% Expenses of Income</h4>
+      <div class="dashboard-income">
+        <h4>Monthly Income</h4>
+        <h5 id="budget-dashboard-monthly-income">-</h5>
+        <h4>Monthly Expenses</h4>
+        <h4>Monthly Flexible Spending</h4>
+        <h4>% Expenses of Income</h4>
+      </div>
 
-      <h4>Monthly Savings</h4>
-      <h4>% Savings of Income</h4>
+      <div class="dashboard-saving">
+        <h4>Monthly Savings</h4>
+        <h5 id="budget-dashboard-monthly-saving">-</h5>
+        <h4>% Savings of Income</h4>
+        <h5 id="budget-dashboard-monthly-saving-percent">-</h5>
+      </div>
 
-      <h4>Total Expenses & Saving</h4>
-      <h4>% of Monthly Income Remaining</h4>
-
+      <div class="dashboard-totals">
+        <h4>Total Expenses & Saving</h4>
+        <h4>% of Monthly Income Remaining</h4>
+      </div>
 
 
       <form>
