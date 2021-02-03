@@ -1,0 +1,11 @@
+BEGIN;
+
+CREATE TABLE expenses(
+  id SERIAL PRIMARY KEY,
+  date DATE NOT NULL,
+  source TEXT NOT NULL,
+  amount NUMERIC NOT NULL,
+  occurrence TEXT NOT NULL
+);
+
+COMMIT;
