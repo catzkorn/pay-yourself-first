@@ -34,6 +34,12 @@ function _showDashboardData(dashboard) {
   document.getElementById('income-source').value = dashboard.Income.Source;
   document.getElementById('income-amount').value = dashboard.Income.Amount;
   document.getElementById('budget-dashboard-monthly-income').innerHTML = "£" + dashboard.Income.Amount;
+
+  // Expenses
+  document.getElementById('expense-source').value = dashboard.Expense.Source;
+  document.getElementById('expense-amount').value = dashboard.Expense.Amount;
+  document.getElementById('expense-occurrence').selectedIndex = dashboard.Expense.Occurrence;
+  document.getElementById('budget-dashboard-monthly-expenses').innerHTML = "£" + dashboard.Expense.Amount;
 }
 
 

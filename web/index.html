@@ -6,6 +6,7 @@
   <script src="/budgetIncome.js"></script>
   <script src="/budgetSaving.js"></script>
   <script src="/budgetDashboard.js"></script>
+  <script src="/budgetExpenses.js"></script>
 
 
   <title>Pay Yourself First</title>
@@ -19,12 +20,13 @@
     <h1>Budget Dashboard</h1>
 
 
-    <div class="budget-date" onclick="loadDashboardData()">
+    <div class="budget-date">
 
       <div class="dashboard-income">
         <h4>Monthly Income</h4>
         <h5 id="budget-dashboard-monthly-income">-</h5>
         <h4>Monthly Expenses</h4>
+        <h5 id="budget-dashboard-monthly-expenses">-</h5>
         <h4>Monthly Flexible Spending</h4>
         <h4>% Expenses of Income</h4>
       </div>
@@ -42,7 +44,7 @@
       </div>
 
 
-      <form>
+      <form onclick="loadDashboardData()">
         <label for="date-month">Month:</label>
         <select name="date-month" id="date-month">
           <option value="01">January</option>
@@ -92,11 +94,28 @@
     <label for="saving-percent">Percent</label>
     <input type="text" id="saving-percent" name="saving-percent"><br>
 
-    <button type="button" onclick="recordIncome(); recordSaving()">Save</button>
 
-    </form>
+    <div class="budget-saving">
 
-  </div>
+      <h1>Expenses</h1>
+
+      <label for="expense-source">Type</label>
+      <input type="text" id="expense-source" name="expense-source">
+      <label for="expense-amount">Amount</label>
+      <input type="text" id="expense-amount" name="expense-amount">
+      <label for="expense-amount">Occurrence</label>
+      <select name="expense-occurrence" id="expense-occurrence">
+        <option value="monthly">Monthly</option>
+        <option value="weekly">Weekly</option>
+        <option value="yearly">Yearly</option>
+        <option value="one-off">One-Off</option>
+      </select>
+      <button type="button" onclick="recordIncome(); recordSaving(); recordExpense();">Save</button>
+
+      </form>
+
+
+    </div>
 
 
 
