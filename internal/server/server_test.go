@@ -18,7 +18,7 @@ import (
 
 //ToDo build out testing
 
-type StubDatabase struct {
+type StubDataStore struct {
 	income      *income.Income
 	incomes     []income.Income
 	saving      *saving.Saving
@@ -28,7 +28,7 @@ type StubDatabase struct {
 	expenses    []expenses.Expense
 }
 
-func (s *StubDatabase) RetrieveMonthIncome(_ context.Context, date time.Time) (*income.Income, error) {
+func (s *StubDataStore) RetrieveMonthIncome(_ context.Context, date time.Time) (*income.Income, error) {
 
 	if s.income == nil || !date.Equal(s.income.Date) {
 		return nil, income.ErrNoIncomeForMonth
@@ -37,7 +37,7 @@ func (s *StubDatabase) RetrieveMonthIncome(_ context.Context, date time.Time) (*
 	return s.income, nil
 }
 
-func (s *StubDatabase) RecordIncome(_ context.Context, i income.Income) (*income.Income, error) {
+func (s *StubDataStore) RecordIncome(_ context.Context, i income.Income) (*income.Income, error) {
 
 	if s.income == nil {
 		s.income = &income.Income{
@@ -58,7 +58,7 @@ func (s *StubDatabase) RecordIncome(_ context.Context, i income.Income) (*income
 	return s.income, nil
 }
 
-func (s *StubDatabase) ListIncomes(_ context.Context) ([]income.Income, error) {
+func (s *StubDataStore) ListIncomes(_ context.Context) ([]income.Income, error) {
 	amount, _ := decimal.NewFromString("3500.00")
 
 	incomes := []income.Income{{
@@ -70,12 +70,12 @@ func (s *StubDatabase) ListIncomes(_ context.Context) ([]income.Income, error) {
 	return incomes, nil
 }
 
-func (s *StubDatabase) DeleteIncome(_ context.Context, id uint32) error {
+func (s *StubDataStore) DeleteIncome(_ context.Context, id uint32) error {
 	s.deleteCount = append(s.deleteCount, id)
 	return nil
 }
 
-func (s *StubDatabase) RecordMonthSavingPercent(ctx context.Context, sv saving.Saving) (*saving.Saving, error) {
+func (s *StubDataStore) RecordMonthSavingPercent(ctx context.Context, sv saving.Saving) (*saving.Saving, error) {
 
 	if s.saving == nil {
 		s.saving = &saving.Saving{
@@ -96,7 +96,7 @@ func (s *StubDatabase) RecordMonthSavingPercent(ctx context.Context, sv saving.S
 
 }
 
-func (s *StubDatabase) RetrieveMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error) {
+func (s *StubDataStore) RetrieveMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error) {
 	if s.saving == nil || !date.Equal(s.saving.Date) {
 		return nil, saving.ErrNoSavingForMonth
 	}
@@ -104,7 +104,7 @@ func (s *StubDatabase) RetrieveMonthSavingPercent(ctx context.Context, date time
 	return s.saving, nil
 }
 
-func (s *StubDatabase) RecordMonthExpenses(ctx context.Context, e expenses.Expense) (*expenses.Expense, error) {
+func (s *StubDataStore) RecordMonthExpenses(ctx context.Context, e expenses.Expense) (*expenses.Expense, error) {
 	if s.expense == nil {
 		s.expense = &expenses.Expense{
 			ID:         1,
@@ -127,7 +127,7 @@ func (s *StubDatabase) RecordMonthExpenses(ctx context.Context, e expenses.Expen
 	return s.expense, nil
 }
 
-func (s *StubDatabase) RetrieveMonthExpenses(ctx context.Context, date time.Time) (*expenses.Expense, error) {
+func (s *StubDataStore) RetrieveMonthExpenses(ctx context.Context, date time.Time) (*expenses.Expense, error) {
 	if s.expense == nil || !date.Equal(s.expense.Date) {
 		return nil, expenses.ErrNoExpensesForMonth
 	}
@@ -151,7 +151,7 @@ func TestGetDashboardData(t *testing.T) {
 			Date:    time.Date(2021, time.April, 1, 0, 0, 0, 0, time.UTC),
 		}
 
-		store := &StubDatabase{income: &i, saving: &s}
+		store := &StubDataStore{income: &i, saving: &s}
 
 		server := NewServer(store)
 
@@ -206,7 +206,7 @@ func TestPostMonthIncome(t *testing.T) {
 			Amount: amount,
 		}
 
-		store := &StubDatabase{}
+		store := &StubDataStore{}
 
 		server := NewServer(store)
 
@@ -245,7 +245,7 @@ func TestPostMonthIncome(t *testing.T) {
 			Amount: amount,
 		}
 
-		store := &StubDatabase{income: &i}
+		store := &StubDataStore{income: &i}
 		server := NewServer(store)
 
 		updatedAmount, _ := decimal.NewFromString("2600.00")
@@ -303,7 +303,7 @@ func TestPostMonthSavingPercent(t *testing.T) {
 			Date:    time.Date(2022, time.May, 1, 0, 0, 0, 0, time.UTC),
 		}
 
-		store := &StubDatabase{}
+		store := &StubDataStore{}
 		server := NewServer(store)
 
 		request := newPostRecordSavingRequest(t, s)
@@ -342,7 +342,7 @@ func TestPostRecordExpense(t *testing.T) {
 			Occurrence: "monthly",
 		}
 
-		store := &StubDatabase{expense: &e}
+		store := &StubDataStore{expense: &e}
 		server := NewServer(store)
 
 		request := newPostRecordExpensesRequest(t, e)

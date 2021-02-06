@@ -16,6 +16,6 @@ type Expense struct {
 	Occurrence string
 }
 
-// ErrNoSavingForMonth is the error returned when no data could be
+// ErrNoExpensesForMonth is the error returned when no data could be
 // found for the month requested
 var ErrNoExpensesForMonth = errors.New("no expenses data for selected month")
