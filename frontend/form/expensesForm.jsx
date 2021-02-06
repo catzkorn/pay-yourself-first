@@ -6,7 +6,7 @@ function ExpensesForm(props) {
       <h1>Expenses</h1>
 
       <label for="expense-source">Type</label>
-      <input type="text" value={props.expenseType} name="expense-source" />
+      <input type="text" value={props.expensesType} name="expense-source" />
       <label for="expense-amount">Amount</label>
       <input
         onChange={(event) => {
@@ -17,11 +17,17 @@ function ExpensesForm(props) {
           }
         }}
         type="numeric"
-        value={props.expenseAmount}
+        value={props.expensesAmount}
         name="expense-amount"
       />
       <label for="expense-occurrence">Occurrence</label>
-      <select name="expense-occurrence">
+      <select
+        onChange={(event) => {
+          props.setExpensesOccurrence(event.target.value);
+        }}
+        value={props.expensesOccurrence}
+        name="expense-occurrence"
+      >
         <option value="monthly">Monthly</option>
         <option value="weekly">Weekly</option>
         <option value="yearly">Yearly</option>
