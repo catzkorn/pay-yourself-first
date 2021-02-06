@@ -1,4 +1,5 @@
 import React from "react";
+import DateForm from "./dateForm";
 import ExpensesForm from "./expensesForm";
 import IncomeForm from "./incomeForm";
 import SavingForm from "./savingForm";
@@ -6,6 +7,8 @@ function Form(props) {
   return (
     <div className="input-forms">
       <form>
+        <DateForm />
+
         <IncomeForm
           incomeAmount={props.incomeAmount}
           setIncomeAmount={props.setIncomeAmount}
