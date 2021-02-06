@@ -11,7 +11,11 @@ function IncomeForm(props) {
       <label for="income-amount">Amount</label>
       <input
         onChange={(event) => {
-          props.setIncomeAmount(event.target.value);
+          if (event.target.value === "") {
+            props.setIncomeAmount(0);
+          } else {
+            props.setIncomeAmount(parseInt(event.target.value));
+          }
         }}
         type="numeric"
         value={props.incomeAmount}

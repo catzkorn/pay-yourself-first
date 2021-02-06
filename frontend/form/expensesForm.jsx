@@ -12,7 +12,11 @@ function ExpensesForm(props) {
       <label for="expense-amount">Amount</label>
       <input
         onChange={(event) => {
-          props.setExpensesAmount(event.target.value);
+          if (event.target.value === "") {
+            props.setExpensesAmount(0);
+          } else {
+            props.setExpensesAmount(parseInt(event.target.value));
+          }
         }}
         type="numeric"
         value={props.expenseAmount}

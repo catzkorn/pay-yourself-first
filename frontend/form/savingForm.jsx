@@ -8,7 +8,11 @@ function SavingForm(props) {
       <label for="saving-percent">Percent</label>
       <input
         onChange={(event) => {
-          props.setSavingPercent(event.target.value);
+          if (event.target.value === "") {
+            props.setSavingPercent(0);
+          } else {
+            props.setSavingPercent(parseInt(event.target.value));
+          }
         }}
         type="numeric"
         value={props.savingPercent}
