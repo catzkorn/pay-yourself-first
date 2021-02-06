@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import Dashboard from "./budgetDashboard/dashboard";
 import Form from "./form/dataForm";
 
-ReactDOM.render(<App></App>, document.getElementById("root"));
+ReactDOM.render(<App />, document.getElementById("root"));
 
 function App(props) {
   const [savingPercent, setSavingPercent] = useState(0);

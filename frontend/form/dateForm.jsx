@@ -1,15 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 function DateForm(props) {
-  const [month, setMonth] = useState("01");
-  const [year, setYear] = useState("2021");
-
   function handleMonthChange(event) {
-    setMonth(event.target.value);
+    props.setMonth(event.target.value);
   }
 
   function handleYearChange(event) {
-    setYear(event.target.value);
+    props.setYear(event.target.value);
   }
 
   return (
@@ -20,7 +17,7 @@ function DateForm(props) {
         <select
           onChange={(event) => handleMonthChange(event)}
           name="date-month"
-          value={month}
+          value={props.month}
         >
           <option value="01">January</option>
           <option value="02">February</option>
@@ -40,7 +37,7 @@ function DateForm(props) {
         <select
           onChange={(event) => handleYearChange(event)}
           name="date-year"
-          value={year}
+          value={props.year}
         >
           <option value="2020">2020</option>
           <option value="2021">2021</option>
