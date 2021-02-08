@@ -9,14 +9,16 @@ interface FormProps {
   setIncomeAmount: (incomeAmount: number) => void;
   setSavingPercent: (savingPercent: number) => void;
   setExpensesAmount: (expensesAmount: number) => void;
+  setYear: (year: string) => void;
+  setMonth: (month: string) => void;
+  month: string;
+  year: string;
   savingPercent: number;
   incomeAmount: number;
   expensesAmount: number;
 }
 
 function Form(props: FormProps): JSX.Element {
-  const [month, setMonth] = useState<string>("01");
-  const [year, setYear] = useState<string>("2021");
   const [incomeType, setIncomeType] = useState<string>("");
   const [expensesType, setExpensesType] = useState<string>("");
   const [expensesOccurrence, setExpensesOccurrence] = useState<string>(
@@ -24,7 +26,10 @@ function Form(props: FormProps): JSX.Element {
   );
 
   useEffect(() => {
-    fetch("/api/v1/budget/dashboard?date=" + _formatDateForQuery(month, year))
+    fetch(
+      "/api/v1/budget/dashboard?date=" +
+        _formatDateForQuery(props.month, props.year)
+    )
       .then((response) => {
         return response.json();
       })
@@ -36,11 +41,11 @@ function Form(props: FormProps): JSX.Element {
         setExpensesType(payload.Expense.Source);
         setExpensesOccurrence(payload.Expense.Occurrence);
       });
-  }, [month, year]);
+  }, [props.month, props.year]);
 
   function handleSavingSubmit() {
     const url = "/api/v1/budget/saving";
-    const date = _formatDateForJSON(month, year);
+    const date = _formatDateForJSON(props.month, props.year);
     const options = {
       method: "POST",
       headers: {
@@ -58,7 +63,7 @@ function Form(props: FormProps): JSX.Element {
 
   function handleIncomeSubmit() {
     const url = "/api/v1/budget/income";
-    const date = _formatDateForJSON(month, year);
+    const date = _formatDateForJSON(props.month, props.year);
     const options = {
       method: "POST",
       headers: {
@@ -80,7 +85,7 @@ function Form(props: FormProps): JSX.Element {
 
   function handleExpensesSubmit() {
     const url = "/api/v1/budget/expenses";
-    const date = _formatDateForJSON(month, year);
+    const date = _formatDateForJSON(props.month, props.year);
     const options = {
       method: "POST",
       headers: {
@@ -110,13 +115,16 @@ function Form(props: FormProps): JSX.Element {
   }
 
   return (
-    <div className="input-forms">
-      <form>
+    <div
+      className="px-4 py-6 sm:px-0 border-4 border-dashed border-gray-200 rounded-lg m-2 flex flex-row grid justify-items-center"
+      id="budget-input-forms"
+    >
+      <form className="">
         <DateForm
-          month={month}
-          setMonth={setMonth}
-          year={year}
-          setYear={setYear}
+          month={props.month}
+          setMonth={props.setMonth}
+          year={props.year}
+          setYear={props.setYear}
         />
 
         <IncomeForm
@@ -125,13 +133,11 @@ function Form(props: FormProps): JSX.Element {
           incomeType={incomeType}
           setIncomeType={setIncomeType}
         />
-        <br />
+
         <SavingForm
           savingPercent={props.savingPercent}
           setSavingPercent={props.setSavingPercent}
         />
-
-        <br />
 
         <ExpensesForm
           expensesAmount={props.expensesAmount}

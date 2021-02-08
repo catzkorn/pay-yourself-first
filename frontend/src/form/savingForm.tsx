@@ -7,23 +7,35 @@ interface SavingFormProps {
 
 function SavingForm(props: SavingFormProps): JSX.Element {
   return (
-    <div className="budget-saving">
+    <>
       <h1>Savings</h1>
-
-      <label htmlFor="saving-percent">Percent</label>
-      <input
-        onChange={(event) => {
-          if (event.target.value === "") {
-            props.setSavingPercent(0);
-          } else {
-            props.setSavingPercent(parseInt(event.target.value));
-          }
-        }}
-        type="numeric"
-        value={props.savingPercent}
-        name="saving-percent"
-      />
-    </div>
+      <div className="border flex flex-row" id="budget-saving">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Saving Percent</th>
+            </tr>
+          </thead>
+          <tbody>
+            <th scope="row">
+              <input
+                className=""
+                id="saving-percent"
+                type="numeric"
+                value={props.savingPercent}
+                onChange={(event) => {
+                  if (event.target.value === "") {
+                    props.setSavingPercent(0);
+                  } else {
+                    props.setSavingPercent(parseInt(event.target.value));
+                  }
+                }}
+              />
+            </th>
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 

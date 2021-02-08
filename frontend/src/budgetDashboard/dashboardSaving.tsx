@@ -7,7 +7,7 @@ interface BudgetSavingProps {
 
 function BudgetSaving(props: BudgetSavingProps): JSX.Element {
   return (
-    <div className="dashboard-saving">
+    <div className="border m-2" id="budget-dashboard-saving">
       <h4>Monthly Savings</h4>
       <h5>£{props.savingTotal}</h5>
       <h4>% Savings of Income</h4>

@@ -16,8 +16,8 @@ psql -d pay_yourself_first_test -f ./db/migrations/005_expenses.up.sql
 Generating React:
 
 ```shell
-esbuild --bundle frontend/src/app.jsx --outfile=web/js/index.js --define:process.env.NODE_ENV=\"development\" --minify --watch --sourcemap
-esbuild --bundle frontend/src/app.jsx --outfile=web/js/index.js --define:process.env.NODE_ENV=\"production\" --minify --watch --sourcemap
+esbuild --bundle ./frontend/src/app.jsx --outfile=web/js/index.js --define:process.env.NODE_ENV=\"development\" --minify --watch --sourcemap
+esbuild --bundle ./frontend/src/app.jsx --outfile=web/js/index.js --define:process.env.NODE_ENV=\"production\" --minify --watch --sourcemap
 ```
 
 Typescript typechecker

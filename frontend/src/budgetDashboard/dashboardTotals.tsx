@@ -1,8 +1,8 @@
 import * as React from "react";
 
-interface DashboardTotalsProps{
-  totalExpensesAndSavings: number,
-  incomeAmount: number
+interface DashboardTotalsProps {
+  totalExpensesAndSavings: number;
+  incomeAmount: number;
 }
 
 function DashboardTotals(props: DashboardTotalsProps): JSX.Element {
@@ -13,7 +13,7 @@ function DashboardTotals(props: DashboardTotalsProps): JSX.Element {
   }
 
   return (
-    <div className="dashboard-totals">
+    <div className="border m-2" id="budget-dashboard-totals">
       <h4>Total Expenses & Saving</h4>
       <h5>£{props.totalExpensesAndSavings}</h5>
       <h4>% of Monthly Income Remaining</h4>

@@ -12,7 +12,7 @@ function BudgetIncome(props: BudgetIncomeProps): JSX.Element {
     expensePercent = (props.expensesAmount / props.incomeAmount) * 100;
   }
   return (
-    <div className="dashboard-income">
+    <div className="border m-2" id="budget-dashboard-income">
       <h4>Monthly Income</h4>
       <h5>£{props.incomeAmount}</h5>
       <h4>Monthly Expenses</h4>
