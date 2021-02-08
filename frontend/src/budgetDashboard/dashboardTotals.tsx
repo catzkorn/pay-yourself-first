@@ -13,10 +13,14 @@ function DashboardTotals(props: DashboardTotalsProps): JSX.Element {
   }
 
   return (
-    <div className="border m-2" id="budget-dashboard-totals">
-      <h4>Total Expenses & Saving</h4>
+    <div
+      className="border m-2 flex flex-col items-center space-y-2"
+      id="budget-dashboard-totals"
+    >
+      <h3>Totals</h3>
+      <h4>Expenses & Saving</h4>
       <h5>£{props.totalExpensesAndSavings}</h5>
-      <h4>% of Monthly Income Remaining</h4>
+      <h4>% Income Remaining</h4>
       <h5>{percentIncomeRemaining.toFixed(2)}%</h5>
     </div>
   );

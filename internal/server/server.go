@@ -44,7 +44,7 @@ func NewServer(dataStore DataStore) *Server {
 
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 
-	s.router.Handle("/income", http.HandlerFunc(s.incomeHandler))
+	s.router.Handle("/api/v1/income", http.HandlerFunc(s.incomeHandler))
 	s.router.Handle("/api/v1/budget/income", http.HandlerFunc(s.budgetIncomeHandler))
 	s.router.Handle("/api/v1/budget/saving", http.HandlerFunc(s.budgetSavingHandler))
 	s.router.Handle("/api/v1/budget/dashboard", http.HandlerFunc(s.budgetDashboardHandler))
@@ -64,14 +64,14 @@ func (s *Server) incomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		s.processListIncome(r.Context(), w)
+		s.processListIncome(w, r)
 	}
 }
 
 // processListIncome processes the get '/' and returns the income slice in JSON format
-func (s *Server) processListIncome(ctx context.Context, w http.ResponseWriter) {
+func (s *Server) processListIncome(w http.ResponseWriter, r *http.Request) {
 
-	incomes, err := s.dataStore.ListIncomes(ctx)
+	incomes, err := s.dataStore.ListIncomes(r.Context())
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
