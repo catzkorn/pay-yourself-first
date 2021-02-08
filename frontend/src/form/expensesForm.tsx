@@ -13,7 +13,10 @@ function ExpensesForm(props: ExpensesFormProps): JSX.Element {
   return (
     <>
       <h1>Expenses</h1>
-      <div className="border m-6 flex flex-row" id="budget-saving">
+      <div
+        className="border m-6 flex flex-row items-center space-y-2"
+        id="budget-saving"
+      >
         <table className="" id="expenses-table">
           <thead>
             <tr>

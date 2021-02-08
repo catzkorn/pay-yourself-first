@@ -84,7 +84,7 @@ func (d *Database) ListIncomes(ctx context.Context) ([]income.Income, error) {
 	selectQuery := `
 	SELECT id, date, source, amount
 	FROM income
-	ORDER BY date;
+	ORDER BY date DESC;
 	`
 
 	rows, err := d.database.QueryContext(

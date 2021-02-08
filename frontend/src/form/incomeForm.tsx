@@ -11,7 +11,10 @@ function IncomeForm(props: IncomeFormProps): JSX.Element {
   return (
     <>
       <h1>Income</h1>
-      <div className="border flex flex-row" id="budget-income">
+      <div
+        className="border flex flex-row items-center space-y-2"
+        id="budget-income"
+      >
         <table className="" id="budget-income-table">
           <thead>
             <tr>

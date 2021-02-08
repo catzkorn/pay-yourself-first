@@ -9,7 +9,10 @@ function SavingForm(props: SavingFormProps): JSX.Element {
   return (
     <>
       <h1>Savings</h1>
-      <div className="border flex flex-row" id="budget-saving">
+      <div
+        className="border flex flex-row items-center space-y-2"
+        id="budget-saving"
+      >
         <table>
           <thead>
             <tr>

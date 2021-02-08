@@ -19,7 +19,10 @@ function DateForm(props: DateFormProps): JSX.Element {
   return (
     <>
       <h2>Budget Date</h2>
-      <div className="border m-6 flex flex-row" id="budget-date-selection">
+      <div
+        className="border m-6 flex flex-row items-center space-y-2"
+        id="budget-date-selection"
+      >
         <table>
           <thead>
             <tr>

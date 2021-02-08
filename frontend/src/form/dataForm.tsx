@@ -116,10 +116,10 @@ function Form(props: FormProps): JSX.Element {
 
   return (
     <div
-      className="px-4 py-6 sm:px-0 border-4 border-dashed border-gray-200 rounded-lg m-2 flex flex-row grid justify-items-center"
+      className="px-4 py-6 sm:px-0 border-4 border-dashed border-gray-200 rounded-lg m-2 flex flex-row items-center space-y-2 grid justify-items-center"
       id="budget-input-forms"
     >
-      <form className="">
+      <form className="flex flex-col items-center space-y-2">
         <DateForm
           month={props.month}
           setMonth={props.setMonth}
