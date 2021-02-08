@@ -1,6 +1,11 @@
-import React from "react";
+import * as React from "react";
 
-function BudgetSaving(props) {
+interface BudgetSavingProps {
+  savingTotal: number;
+  savingPercent: number;
+}
+
+function BudgetSaving(props: BudgetSavingProps): JSX.Element {
   return (
     <div className="dashboard-saving">
       <h4>Monthly Savings</h4>

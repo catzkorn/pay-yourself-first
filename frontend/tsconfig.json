@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "target": "es2015",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "moduleResolution": "node"
+  },
+  "include": ["./src/**/*"]
+}

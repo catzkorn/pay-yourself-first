@@ -1,19 +1,26 @@
-import React, { useEffect, useState } from "react";
+import * as React from "react";
 
-function DateForm(props) {
-  function handleMonthChange(event) {
+interface DateFormProps {
+  setMonth: (month: string) => void;
+  setYear: (year: string) => void;
+  month: string;
+  year: string;
+}
+
+function DateForm(props: DateFormProps): JSX.Element {
+  function handleMonthChange(event: React.ChangeEvent<HTMLSelectElement>) {
     props.setMonth(event.target.value);
   }
 
-  function handleYearChange(event) {
+  function handleYearChange(event: React.ChangeEvent<HTMLSelectElement>) {
     props.setYear(event.target.value);
   }
 
   return (
     <>
       <h2>Select Date:</h2>
-      <form onclick="loadDashboardData()">
-        <label for="date-month">Month:</label>
+      <form>
+        <label htmlFor="date-month">Month:</label>
         <select
           onChange={(event) => handleMonthChange(event)}
           name="date-month"
@@ -33,7 +40,7 @@ function DateForm(props) {
           <option value="12">December</option>
         </select>
 
-        <label for="date-year">Year:</label>
+        <label htmlFor="date-year">Year:</label>
         <select
           onChange={(event) => handleYearChange(event)}
           name="date-year"

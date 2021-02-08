@@ -1,10 +1,15 @@
-import React from "react";
+import * as React from "react";
 import BudgetIncome from "./dashboardIncome";
 import BudgetSaving from "./dashboardSaving";
 import DashboardTotals from "./dashboardTotals";
-import DateForm from "../form/dateForm";
 
-function Dashboard(props) {
+interface DashboardProps {
+  incomeAmount: number;
+  savingPercent: number;
+  expensesAmount: number;
+}
+
+function Dashboard(props: DashboardProps): JSX.Element {
   const savingTotal = props.incomeAmount * (props.savingPercent / 100);
   const totalExpensesAndSavings = savingTotal + props.expensesAmount;
   const flexibleSpending = props.incomeAmount - totalExpensesAndSavings;

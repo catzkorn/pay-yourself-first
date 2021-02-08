@@ -1,15 +1,27 @@
-import React, { useEffect, useState } from "react";
+import * as React from "react";
+import { useEffect, useState } from "react";
 import DateForm from "./dateForm";
 import ExpensesForm from "./expensesForm";
 import IncomeForm from "./incomeForm";
 import SavingForm from "./savingForm";
 
-function Form(props) {
-  const [month, setMonth] = useState("01");
-  const [year, setYear] = useState("2021");
-  const [incomeType, setIncomeType] = useState("");
-  const [expensesType, setExpensesType] = useState("");
-  const [expensesOccurrence, setExpensesOccurrence] = useState("monthly");
+interface FormProps {
+  setIncomeAmount: (incomeAmount: number) => void;
+  setSavingPercent: (savingPercent: number) => void;
+  setExpensesAmount: (expensesAmount: number) => void;
+  savingPercent: number;
+  incomeAmount: number;
+  expensesAmount: number;
+}
+
+function Form(props: FormProps): JSX.Element {
+  const [month, setMonth] = useState<string>("01");
+  const [year, setYear] = useState<string>("2021");
+  const [incomeType, setIncomeType] = useState<string>("");
+  const [expensesType, setExpensesType] = useState<string>("");
+  const [expensesOccurrence, setExpensesOccurrence] = useState<string>(
+    "monthly"
+  );
 
   useEffect(() => {
     fetch("/api/v1/budget/dashboard?date=" + _formatDateForQuery(month, year))
@@ -54,7 +66,7 @@ function Form(props) {
       },
       body: JSON.stringify({
         date: date,
-        source: props.incomeType,
+        source: incomeType,
         amount: props.incomeAmount,
       }),
     };
@@ -76,7 +88,7 @@ function Form(props) {
       },
       body: JSON.stringify({
         date: date,
-        source: props.expensesType,
+        source: expensesType,
         amount: props.expensesAmount,
         occurrence: expensesOccurrence,
       }),
@@ -89,11 +101,11 @@ function Form(props) {
     });
   }
 
-  function _formatDateForQuery(month, year) {
+  function _formatDateForQuery(month: string, year: string): string {
     return year + "-" + month + "-" + "01";
   }
 
-  function _formatDateForJSON(month, year) {
+  function _formatDateForJSON(month: string, year: string): string {
     return year + "-" + month + "-" + "01" + "T00:00:00Z";
   }
 

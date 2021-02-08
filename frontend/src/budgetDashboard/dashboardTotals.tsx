@@ -1,6 +1,11 @@
-import React from "react";
+import * as React from "react";
 
-function DashboardTotals(props) {
+interface DashboardTotalsProps{
+  totalExpensesAndSavings: number,
+  incomeAmount: number
+}
+
+function DashboardTotals(props: DashboardTotalsProps): JSX.Element {
   let percentIncomeRemaining = 0;
   if (props.incomeAmount > 0) {
     percentIncomeRemaining =

@@ -1,13 +1,22 @@
-import React from "react";
+import * as React from "react";
 
-function ExpensesForm(props) {
+interface ExpensesFormProps {
+  expensesType: string;
+  setExpensesType: (expensesType: string) => void;
+  setExpensesAmount: (expensesAmount: number) => void;
+  expensesAmount: number;
+  setExpensesOccurrence: (expensesOccurrence: string) => void;
+  expensesOccurrence: string;
+}
+
+function ExpensesForm(props: ExpensesFormProps): JSX.Element {
   return (
     <div className="budget-saving">
       <h1>Expenses</h1>
 
-      <label for="expense-source">Type</label>
+      <label htmlFor="expense-source">Type</label>
       <input type="text" value={props.expensesType} name="expense-source" />
-      <label for="expense-amount">Amount</label>
+      <label htmlFor="expense-amount">Amount</label>
       <input
         onChange={(event) => {
           if (event.target.value === "") {
@@ -20,7 +29,7 @@ function ExpensesForm(props) {
         value={props.expensesAmount}
         name="expense-amount"
       />
-      <label for="expense-occurrence">Occurrence</label>
+      <label htmlFor="expense-occurrence">Occurrence</label>
       <select
         onChange={(event) => {
           props.setExpensesOccurrence(event.target.value);

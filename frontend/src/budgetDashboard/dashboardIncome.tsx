@@ -1,7 +1,12 @@
-import React from "react";
-import BudgetSaving from "./dashboardSaving";
+import * as React from "react";
 
-function BudgetIncome(props) {
+interface BudgetIncomeProps {
+  incomeAmount: number;
+  expensesAmount: number;
+  flexibleSpending: number;
+}
+
+function BudgetIncome(props: BudgetIncomeProps): JSX.Element {
   let expensePercent = 0;
   if (props.incomeAmount > 0) {
     expensePercent = (props.expensesAmount / props.incomeAmount) * 100;
