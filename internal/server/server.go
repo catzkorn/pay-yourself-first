@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -69,13 +70,13 @@ func (s *Server) incomeHandler(w http.ResponseWriter, r *http.Request) {
 		s.processListIncome(w, r)
 	case http.MethodDelete:
 		urlID := strings.TrimPrefix(r.URL.Path, "/api/v1/income/")
-		uint64, err := strconv.ParseUint(urlID, 2, 32)
+		id, err := strconv.ParseUint(urlID, 10, 32)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		id := uint32(uint64)
-		s.processDeleteIncome(w, id)
+		fmt.Println(id)
+		s.processDeleteIncome(w, uint32(id))
 	}
 }
 

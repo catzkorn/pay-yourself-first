@@ -23,7 +23,7 @@ function IncomeForm(props: IncomeFormProps): JSX.Element {
             </tr>
           </thead>
           <tbody>
-            <th scope="col">
+            <th scope="row">
               <input
                 className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300"
                 id="income-source"
@@ -38,7 +38,7 @@ function IncomeForm(props: IncomeFormProps): JSX.Element {
                 }}
               />
             </th>
-            <th>
+            <th scope="row">
               <input
                 className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300"
                 id="income-amount"

@@ -27,8 +27,8 @@ function ExpensesForm(props: ExpensesFormProps): JSX.Element {
           </thead>
           <tbody>
             <th scope="row">
-              {" "}
               <input
+                className=""
                 type="text"
                 value={props.expensesType}
                 name="expense-source"
