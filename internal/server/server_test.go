@@ -28,6 +28,14 @@ type StubDataStore struct {
 	expenses    []expenses.Expense
 }
 
+func (s *StubDataStore) RetrieveIncome(_ context.Context, id uint32) (*income.Income, error) {
+	income := income.Income{
+		ID: id,
+	}
+
+	return &income, nil
+}
+
 func (s *StubDataStore) RetrieveMonthIncome(_ context.Context, date time.Time) (*income.Income, error) {
 
 	if s.income == nil || !date.Equal(s.income.Date) {
@@ -375,7 +383,23 @@ func TestPostRecordExpense(t *testing.T) {
 		}
 
 	})
+}
 
+func TestDeleteIncome(t *testing.T) {
+	t.Run("deletes a specific income from the datestore and returns 200", func(t *testing.T) {
+		incomes := []income.Income{{ID: 1}}
+		store := &StubDataStore{incomes: incomes}
+		server := NewServer(store)
+
+		request := newDeleteIncomeRequest(t, 1)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		if len(store.deleteCount) != 1 {
+			t.Errorf("got %d calls to DeleteIncome want %d", len(store.deleteCount), 1)
+		}
+	})
 }
 
 func assertStatus(t *testing.T, got, want int) {
@@ -443,4 +467,13 @@ func newPostRecordExpensesRequest(t testing.TB, expense expenses.Expense) *http.
 	}
 
 	return request
+}
+
+func newDeleteIncomeRequest(t testing.TB, ID int) *http.Request {
+	url := fmt.Sprintf("/api/v1/income/%d", ID)
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		t.Fatalf("failed to send request: %v", err)
+	}
+	return req
 }

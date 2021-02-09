@@ -3,8 +3,9 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/catzkorn/pay-yourself-first/internal/expenses"
@@ -32,6 +33,7 @@ type DataStore interface {
 	RecordIncome(ctx context.Context, i income.Income) (*income.Income, error)
 	ListIncomes(ctx context.Context) ([]income.Income, error)
 	RetrieveMonthIncome(ctx context.Context, date time.Time) (*income.Income, error)
+	RetrieveIncome(ctx context.Context, id uint32) (*income.Income, error)
 	DeleteIncome(ctx context.Context, id uint32) error
 	RecordMonthSavingPercent(ctx context.Context, s saving.Saving) (*saving.Saving, error)
 	RetrieveMonthSavingPercent(ctx context.Context, date time.Time) (*saving.Saving, error)
@@ -44,7 +46,7 @@ func NewServer(dataStore DataStore) *Server {
 
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 
-	s.router.Handle("/api/v1/income", http.HandlerFunc(s.incomeHandler))
+	s.router.Handle("/api/v1/income/", http.HandlerFunc(s.incomeHandler))
 	s.router.Handle("/api/v1/budget/income", http.HandlerFunc(s.budgetIncomeHandler))
 	s.router.Handle("/api/v1/budget/saving", http.HandlerFunc(s.budgetSavingHandler))
 	s.router.Handle("/api/v1/budget/dashboard", http.HandlerFunc(s.budgetDashboardHandler))
@@ -65,7 +67,39 @@ func (s *Server) incomeHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		s.processListIncome(w, r)
+	case http.MethodDelete:
+		urlID := strings.TrimPrefix(r.URL.Path, "/api/v1/income/")
+		uint64, err := strconv.ParseUint(urlID, 2, 32)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		id := uint32(uint64)
+		s.processDeleteIncome(w, id)
 	}
+}
+
+func (s *Server) processDeleteIncome(w http.ResponseWriter, id uint32) {
+
+	retrievedIncome, err := s.dataStore.RetrieveIncome(context.Background(), id)
+
+	switch {
+	case err != nil:
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	case retrievedIncome == nil:
+		errorMessage := "Failed to delete income - income not found"
+		http.Error(w, errorMessage, http.StatusNotFound)
+		return
+	default:
+		err = s.dataStore.DeleteIncome(context.Background(), retrievedIncome.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
+
 }
 
 // processListIncome processes the get '/' and returns the income slice in JSON format
@@ -211,7 +245,6 @@ func (s *Server) postMonthSaving(w http.ResponseWriter, r *http.Request) {
 	var saving saving.Saving
 
 	err := json.NewDecoder(r.Body).Decode(&saving)
-	fmt.Println(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

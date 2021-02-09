@@ -166,6 +166,47 @@ func (d *Database) RetrieveMonthIncome(ctx context.Context, date time.Time) (*in
 	}
 }
 
+// RetrieveIncome gets a income entry by ID
+func (d *Database) RetrieveIncome(ctx context.Context, ID uint32) (*income.Income, error) {
+
+	var id uint32
+	var returnedDate time.Time
+	var source string
+	var amount pgtype.Numeric
+
+	selectQuery := `
+	SELECT id, date, source, amount
+	FROM income
+	WHERE id = $1;
+	`
+
+	err := d.database.QueryRowContext(
+		ctx,
+		selectQuery,
+		ID,
+	).Scan(
+		&id,
+		&returnedDate,
+		&source,
+		&amount,
+	)
+
+	switch {
+	case err == sql.ErrNoRows:
+		return nil, income.ErrNoIncomeForMonth
+	case err != nil:
+		return nil, fmt.Errorf("unexpected database error: %w", err)
+	default:
+		monthIncome := income.Income{
+			ID:     id,
+			Date:   returnedDate,
+			Source: source,
+			Amount: decimal.NewFromBigInt(amount.Int, amount.Exp),
+		}
+		return &monthIncome, nil
+	}
+}
+
 // DeleteIncome deletes an income based on the id
 func (d *Database) DeleteIncome(ctx context.Context, id uint32) error {
 
