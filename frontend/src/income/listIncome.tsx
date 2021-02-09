@@ -86,7 +86,7 @@ function Income(props: IncomeProps) {
 }
 
 function loadIncomes(setIncomes: (incomes: Income[]) => void) {
-  const url = "/api/v1/income";
+  const url = "/api/v1/income/";
   fetch(url)
     .then((response) => {
       return response.json();
