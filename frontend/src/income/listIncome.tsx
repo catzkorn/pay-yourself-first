@@ -2,6 +2,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import formatDateAsDay from "../util/formatDate";
 import formatAmountTwoDecimals from "../util/formatDecimalAmount";
+import IncomeModal from "./incomeModal";
 import Income from "./incomeTypes";
 
 function ListIncome(): JSX.Element {
@@ -45,6 +46,8 @@ interface IncomeProps {
 }
 
 function Income(props: IncomeProps) {
+  const [showModal, setShowModal] = useState<boolean>(false);
+
   function handleDeleteIncome(id: number) {
     const url = "/api/v1/income/" + String(id);
     console.log(id);
@@ -75,11 +78,18 @@ function Income(props: IncomeProps) {
           type="button"
           onClick={(event) => {
             event.preventDefault();
-            handleDeleteIncome(props.income.ID);
+            setShowModal(true);
           }}
         >
           Delete
         </button>
+
+        <IncomeModal
+          income={props.income}
+          deleteIncome={() => handleDeleteIncome(props.income.ID)}
+          setShowModal={setShowModal}
+          showModal={showModal}
+        />
       </td>
     </tr>
   );
