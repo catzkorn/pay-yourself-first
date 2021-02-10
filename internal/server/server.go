@@ -17,8 +17,9 @@ import (
 
 // Server is the HTTP interface
 type Server struct {
-	dataStore DataStore
-	router    *http.ServeMux
+	dataStore  DataStore
+	router     *http.ServeMux
+	fileServer http.Handler
 }
 
 // Dashboard defines the information needed for the budget dashboard
@@ -45,16 +46,26 @@ type DataStore interface {
 // NewServer returns an instance of a Server
 func NewServer(dataStore DataStore) *Server {
 
-	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
+	s := &Server{
+		dataStore:  dataStore,
+		router:     http.NewServeMux(),
+		fileServer: http.FileServer(http.Dir("web")),
+	}
 
 	s.router.Handle("/api/v1/income/", http.HandlerFunc(s.incomeHandler))
 	s.router.Handle("/api/v1/budget/income", http.HandlerFunc(s.budgetIncomeHandler))
 	s.router.Handle("/api/v1/budget/saving", http.HandlerFunc(s.budgetSavingHandler))
 	s.router.Handle("/api/v1/budget/dashboard", http.HandlerFunc(s.budgetDashboardHandler))
 	s.router.Handle("/api/v1/budget/expenses", http.HandlerFunc(s.budgetExpensesHandler))
-	s.router.Handle("/", http.FileServer(http.Dir("web")))
+	s.router.Handle("/", s.fileServer)
+	s.router.Handle("/income", http.HandlerFunc(s.serveIncome))
 
 	return s
+}
+
+func (s *Server) serveIncome(w http.ResponseWriter, r *http.Request) {
+	r.URL.Path = "/"
+	s.fileServer.ServeHTTP(w, r)
 }
 
 // ServeHTTP implements the http handler interface
