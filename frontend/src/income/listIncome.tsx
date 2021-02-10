@@ -70,7 +70,7 @@ function Income(props: IncomeProps) {
       <td>£ {formatAmountTwoDecimals(props.income.Amount)}</td>
       <td>
         <button
-          className=""
+          className="border p-1 rounded hover:shadow-md"
           id="delete-income-button"
           type="button"
           onClick={(event) => {
